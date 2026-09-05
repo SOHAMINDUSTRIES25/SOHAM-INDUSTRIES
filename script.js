@@ -2,102 +2,162 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* =========================================================
-       BASIC HELPERS
-    ========================================================== */
-
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => document.querySelectorAll(selector);
 
     const body = document.body;
-    const preloader = $("#preloader");
-    const loaderBar = $("#loaderBar");
-    const loaderPercent = $("#loaderPercent");
+    const intro = $("#cinematicIntro");
     const navigation = $("#navigation");
-
-
-    /* =========================================================
-       REDUCED MOTION
-    ========================================================== */
 
     const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
     ).matches;
 
 
-    /* =========================================================
-       PRELOADER
-       Lightweight — one animation loop only
+    /* ==========================================================
+       INITIAL STATE
     ========================================================== */
 
     body.classList.add("loading");
 
-    const loaderDuration = reducedMotion ? 250 : 1000;
-
-    const startTime = performance.now();
-
-    function runLoader(now) {
-
-        const elapsed = now - startTime;
-
-        const progress = Math.min(
-            elapsed / loaderDuration,
-            1
-        );
-
-        const percentage = Math.round(progress * 100);
-
-        if (loaderBar) {
-            loaderBar.style.width = `${percentage}%`;
-        }
-
-        if (loaderPercent) {
-            loaderPercent.textContent = `${percentage}%`;
-        }
-
-        if (progress < 1) {
-
-            requestAnimationFrame(runLoader);
-
-        } else {
-
-            finishLoader();
-
-        }
-    }
 
 
-    function finishLoader() {
+    /* ==========================================================
+       CINEMATIC INTRO
+       
+       Timeline:
+       
+       0ms       Black screen
+       250ms     Mathematics begins appearing
+       700ms     SOHAM appears
+       1200ms    INDUSTRIES appears
+       1800ms    Title flash
+       2200ms    Intro fades
+       2700ms    Website begins
+    ========================================================== */
 
-        if (!preloader) {
-            startExperience();
+    function startCinematicIntro() {
+
+        if (!intro) {
+            startWebsite();
             return;
         }
 
-        preloader.classList.add("loaded");
+
+        const formulas = $$(".formula");
+
+
+        if (reducedMotion) {
+
+            formulas.forEach((formula) => {
+                formula.classList.add("formula-visible");
+            });
+
+            intro.classList.add("title-visible");
+
+            setTimeout(() => {
+                finishIntro();
+            }, 600);
+
+            return;
+        }
+
+
+        /* ----------------------------------------------
+           Phase 1 — Mathematics
+        ---------------------------------------------- */
 
         setTimeout(() => {
 
-            preloader.remove();
+            formulas.forEach((formula, index) => {
 
-            body.classList.remove("loading");
+                setTimeout(() => {
 
-            startExperience();
+                    formula.classList.add(
+                        "formula-visible"
+                    );
 
-        }, reducedMotion ? 0 : 450);
+                }, index * 55);
+
+            });
+
+        }, 180);
+
+
+        /* ----------------------------------------------
+           Phase 2 — Main title
+        ---------------------------------------------- */
+
+        setTimeout(() => {
+
+            intro.classList.add("title-visible");
+
+        }, 700);
+
+
+        /* ----------------------------------------------
+           Phase 3 — Flash
+        ---------------------------------------------- */
+
+        setTimeout(() => {
+
+            intro.classList.add("title-flash");
+
+        }, 1550);
+
+
+        /* ----------------------------------------------
+           Phase 4 — Fade out
+        ---------------------------------------------- */
+
+        setTimeout(() => {
+
+            finishIntro();
+
+        }, 2250);
+
     }
 
 
-    requestAnimationFrame(runLoader);
 
-
-    /* =========================================================
-       EXPERIENCE START
+    /* ==========================================================
+       FINISH INTRO
     ========================================================== */
 
-    function startExperience() {
+    function finishIntro() {
 
-        body.classList.add("experience-ready");
+        if (!intro) {
+            startWebsite();
+            return;
+        }
+
+        intro.classList.add("intro-finished");
+
+        setTimeout(() => {
+
+            if (intro.isConnected) {
+                intro.remove();
+            }
+
+            body.classList.remove("loading");
+
+            startWebsite();
+
+        }, reducedMotion ? 0 : 650);
+
+    }
+
+
+
+    /* ==========================================================
+       START MAIN WEBSITE
+    ========================================================== */
+
+    function startWebsite() {
+
+        body.classList.add(
+            "experience-ready"
+        );
 
         setupRevealAnimations();
         setupNavigation();
@@ -107,16 +167,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =========================================================
+
+    /* ==========================================================
        REVEAL ANIMATIONS
-       IntersectionObserver is extremely lightweight.
+       
+       IntersectionObserver is used instead of continuous
+       scroll animation.
     ========================================================== */
 
     function setupRevealAnimations() {
 
         const elements = $$(".reveal");
 
-        if (!elements.length) return;
+        if (!elements.length) {
+            return;
+        }
 
 
         if (
@@ -129,6 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             return;
+
         }
 
 
@@ -137,9 +203,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 entries.forEach((entry) => {
 
-                    if (!entry.isIntersecting) return;
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
 
-                    entry.target.classList.add("visible");
+                    entry.target.classList.add(
+                        "visible"
+                    );
 
                     observerInstance.unobserve(
                         entry.target
@@ -150,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             {
                 threshold: 0.12,
-                rootMargin: "0px 0px -50px 0px"
+                rootMargin: "0px 0px -45px 0px"
             }
         );
 
@@ -164,31 +234,43 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =========================================================
+
+    /* ==========================================================
        NAVIGATION
-       Uses a tiny passive scroll listener.
+       
+       One passive scroll listener.
+       No heavy calculations.
+       No parallax.
     ========================================================== */
 
     function setupNavigation() {
 
-        if (!navigation) return;
+        if (!navigation) {
+            return;
+        }
+
 
         let ticking = false;
 
 
         function updateNavigation() {
 
-            if (window.scrollY > 30) {
+            if (window.scrollY > 35) {
 
-                navigation.classList.add("scrolled");
+                navigation.classList.add(
+                    "scrolled"
+                );
 
             } else {
 
-                navigation.classList.remove("scrolled");
+                navigation.classList.remove(
+                    "scrolled"
+                );
 
             }
 
             ticking = false;
+
         }
 
 
@@ -196,15 +278,15 @@ document.addEventListener("DOMContentLoaded", () => {
             "scroll",
             () => {
 
-                if (!ticking) {
-
-                    requestAnimationFrame(
-                        updateNavigation
-                    );
-
-                    ticking = true;
-
+                if (ticking) {
+                    return;
                 }
+
+                ticking = true;
+
+                requestAnimationFrame(
+                    updateNavigation
+                );
 
             },
             {
@@ -218,82 +300,103 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =========================================================
-       SMOOTH ANCHOR NAVIGATION
+
+    /* ==========================================================
+       SMOOTH NAVIGATION LINKS
     ========================================================== */
 
     function setupSmoothLinks() {
 
-        const links = $$('a[href^="#"]');
+        const links = $$(
+            'a[href^="#"]'
+        );
+
 
         links.forEach((link) => {
 
-            link.addEventListener("click", (event) => {
+            link.addEventListener(
+                "click",
+                (event) => {
 
-                const targetId =
-                    link.getAttribute("href");
+                    const targetId =
+                        link.getAttribute("href");
 
-                if (
-                    !targetId ||
-                    targetId === "#"
-                ) {
-                    return;
+
+                    if (
+                        !targetId ||
+                        targetId === "#"
+                    ) {
+                        return;
+                    }
+
+
+                    const target =
+                        document.querySelector(
+                            targetId
+                        );
+
+
+                    if (!target) {
+                        return;
+                    }
+
+
+                    event.preventDefault();
+
+
+                    const navHeight =
+                        navigation
+                            ? navigation.offsetHeight
+                            : 0;
+
+
+                    const position =
+                        target.getBoundingClientRect()
+                            .top +
+                        window.scrollY -
+                        navHeight;
+
+
+                    if (reducedMotion) {
+
+                        window.scrollTo(
+                            0,
+                            position
+                        );
+
+                    } else {
+
+                        window.scrollTo({
+
+                            top: position,
+
+                            behavior: "smooth"
+
+                        });
+
+                    }
+
                 }
-
-
-                const target =
-                    document.querySelector(targetId);
-
-                if (!target) return;
-
-                event.preventDefault();
-
-
-                const navigationHeight =
-                    navigation
-                        ? navigation.offsetHeight
-                        : 0;
-
-
-                const targetPosition =
-                    target.getBoundingClientRect().top +
-                    window.scrollY -
-                    navigationHeight;
-
-
-                if (reducedMotion) {
-
-                    window.scrollTo(
-                        0,
-                        targetPosition
-                    );
-
-                } else {
-
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: "smooth"
-                    });
-
-                }
-
-            });
+            );
 
         });
 
     }
 
 
-    /* =========================================================
+
+    /* ==========================================================
        PROJECT HOVER
-       No mouse coordinates.
-       No requestAnimationFrame.
-       No continuous animation.
+       
+       Simple class toggle.
+       No mouse tracking.
+       No animation loop.
     ========================================================== */
 
     function setupProjectHover() {
 
         const projects = $$(".project");
+
 
         projects.forEach((project) => {
 
@@ -325,38 +428,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* =========================================================
-       PAGE VISIBILITY
-       Prevents unnecessary work when tab is hidden.
-    ========================================================== */
 
-    document.addEventListener(
-        "visibilitychange",
-        () => {
-
-            if (
-                document.visibilityState === "hidden"
-            ) {
-
-                body.classList.add(
-                    "page-hidden"
-                );
-
-            } else {
-
-                body.classList.remove(
-                    "page-hidden"
-                );
-
-            }
-
-        }
-    );
-
-
-    /* =========================================================
-       IMAGE LAZY LOADING
-       Useful if you add images later.
+    /* ==========================================================
+       IMAGE OPTIMIZATION
+       
+       Future images automatically get lazy loading.
     ========================================================== */
 
     $$("img").forEach((image) => {
@@ -378,35 +454,64 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    /* =========================================================
-       SAFETY FALLBACK
-       If something goes wrong with the loader,
-       reveal the website after a short time.
+
+    /* ==========================================================
+       PAGE VISIBILITY
+    ========================================================== */
+
+    document.addEventListener(
+        "visibilitychange",
+        () => {
+
+            if (
+                document.visibilityState ===
+                "hidden"
+            ) {
+
+                body.classList.add(
+                    "page-hidden"
+                );
+
+            } else {
+
+                body.classList.remove(
+                    "page-hidden"
+                );
+
+            }
+
+        }
+    );
+
+
+
+    /* ==========================================================
+       START
+    ========================================================== */
+
+    startCinematicIntro();
+
+
+
+    /* ==========================================================
+       FAILSAFE
+       
+       The website will never remain stuck behind the intro.
     ========================================================== */
 
     setTimeout(() => {
 
         if (
-            preloader &&
-            document.body.classList.contains("loading")
+            intro &&
+            document.body.classList.contains(
+                "loading"
+            )
         ) {
 
-            preloader.classList.add("loaded");
-
-            setTimeout(() => {
-
-                if (preloader.isConnected) {
-                    preloader.remove();
-                }
-
-                body.classList.remove("loading");
-
-                startExperience();
-
-            }, 400);
+            finishIntro();
 
         }
 
-    }, 2500);
+    }, 4500);
 
 });
