@@ -1,236 +1,139 @@
 "use strict";
 
-/* =========================================================
-SOHAM INDUSTRIES
-CINEMATIC EXPERIENCE ENGINE
-========================================================= */
-
 document.addEventListener("DOMContentLoaded", () => {
 
-/* =====================================================
-   ELEMENT HELPERS
-===================================================== */
+    /* =========================================================
+       BASIC HELPERS
+    ========================================================== */
 
-const $ = (selector, parent = document) =>
-    parent.querySelector(selector);
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => document.querySelectorAll(selector);
 
-const $$ = (selector, parent = document) =>
-    [...parent.querySelectorAll(selector)];
-
-
-/* =====================================================
-   PAGE LOCK
-===================================================== */
-
-document.documentElement.style.scrollBehavior = "auto";
-document.body.style.overflow = "hidden";
+    const body = document.body;
+    const preloader = $("#preloader");
+    const loaderBar = $("#loaderBar");
+    const loaderPercent = $("#loaderPercent");
+    const navigation = $("#navigation");
 
 
-/* =====================================================
-   CINEMATIC PRELOADER
-===================================================== */
+    /* =========================================================
+       REDUCED MOTION
+    ========================================================== */
 
-const preloader = $("#preloader");
-const progressBar = $(".progress-bar");
-const progressNumber = $(".progress-number");
+    const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
 
-let progress = 0;
 
-const updateProgress = (value) => {
+    /* =========================================================
+       PRELOADER
+       Lightweight — one animation loop only
+    ========================================================== */
 
-    progress = Math.min(100, Math.max(0, value));
+    body.classList.add("loading");
 
-    if (progressBar) {
-        progressBar.style.width = `${progress}%`;
-    }
+    const loaderDuration = reducedMotion ? 250 : 1000;
 
-    if (progressNumber) {
-        progressNumber.textContent =
-            `${Math.round(progress).toString().padStart(2, "0")}%`;
-    }
-};
+    const startTime = performance.now();
 
-const runLoader = () => {
+    function runLoader(now) {
 
-    if (!preloader) {
-        document.body.style.overflow = "";
-        initializeExperience();
-        return;
-    }
+        const elapsed = now - startTime;
 
-    let startTime = performance.now();
-    const minimumTime = 1900;
+        const progress = Math.min(
+            elapsed / loaderDuration,
+            1
+        );
 
-    const animateLoader = (time) => {
+        const percentage = Math.round(progress * 100);
 
-        const elapsed = time - startTime;
+        if (loaderBar) {
+            loaderBar.style.width = `${percentage}%`;
+        }
 
-        /*
-         * Fast at the beginning,
-         * slower near the end.
-         */
-        const percentage =
-            100 *
-            (1 -
-                Math.pow(
-                    Math.max(0, 1 - elapsed / minimumTime),
-                    2.8
-                ));
+        if (loaderPercent) {
+            loaderPercent.textContent = `${percentage}%`;
+        }
 
-        updateProgress(Math.min(percentage, 100));
+        if (progress < 1) {
 
-        if (elapsed < minimumTime) {
-
-            requestAnimationFrame(animateLoader);
+            requestAnimationFrame(runLoader);
 
         } else {
 
-            updateProgress(100);
-
-            setTimeout(() => {
-
-                preloader.classList.add("hide");
-
-                document.body.style.overflow = "";
-
-                setTimeout(() => {
-
-                    preloader.style.display = "none";
-
-                    initializeExperience();
-
-                }, 1000);
-
-            }, 300);
+            finishLoader();
 
         }
-    };
-
-    requestAnimationFrame(animateLoader);
-};
+    }
 
 
+    function finishLoader() {
 
-
-let cursorDot = $(".cursor-dot");
-let cursorRing = $(".cursor-ring");
-let cursorLabel = $(".cursor-label");
-
-let mouseX = window.innerWidth / 2;
-let mouseY = window.innerHeight / 2;
-
-let ringX = mouseX;
-let ringY = mouseY;
-
-const cursorSupported =
-    window.matchMedia("(pointer: fine)").matches;
-
-if (!cursorSupported) {
-
-    if (cursorDot) cursorDot.style.display = "none";
-    if (cursorRing) cursorRing.style.display = "none";
-
-} else {
-
-    document.addEventListener("mousemove", (event) => {
-
-        mouseX = event.clientX;
-        mouseY = event.clientY;
-
-        if (cursorDot) {
-
-            cursorDot.style.left = `${mouseX}px`;
-            cursorDot.style.top = `${mouseY}px`;
-        }
-    });
-
-    const animateCursor = () => {
-
-        ringX += (mouseX - ringX) * 0.12;
-        ringY += (mouseY - ringY) * 0.12;
-
-        if (cursorRing) {
-
-            cursorRing.style.left = `${ringX}px`;
-            cursorRing.style.top = `${ringY}px`;
+        if (!preloader) {
+            startExperience();
+            return;
         }
 
-        requestAnimationFrame(animateCursor);
-    };
+        preloader.classList.add("loaded");
 
-    requestAnimationFrame(animateCursor);
+        setTimeout(() => {
 
-    /*
-     * Interactive cursor targets
-     */
+            preloader.remove();
 
-    const cursorTargets = $$(
-        "a, button, .tech-card, .project, [data-cursor]"
-    );
+            body.classList.remove("loading");
 
-    cursorTargets.forEach((element) => {
+            startExperience();
 
-        element.addEventListener("mouseenter", () => {
-
-            if (!cursorRing) return;
-
-            cursorRing.classList.add("active");
-
-            const customLabel =
-                element.getAttribute("data-cursor");
-
-            if (cursorLabel) {
-
-                cursorLabel.textContent =
-                    customLabel || "VIEW";
-            }
-        });
-
-        element.addEventListener("mouseleave", () => {
-
-            if (!cursorRing) return;
-
-            cursorRing.classList.remove("active");
-        });
-    });
-}
+        }, reducedMotion ? 0 : 450);
+    }
 
 
-/* =====================================================
-   CURSOR CLICK RIPPLE
-===================================================== */
-
-if (cursorSupported) {
-
-    document.addEventListener("mousedown", () => {
-
-        if (!cursorRing) return;
-
-        cursorRing.style.transform =
-            "translate(-50%, -50%) scale(0.78)";
-    });
-
-    document.addEventListener("mouseup", () => {
-
-        if (!cursorRing) return;
-
-        cursorRing.style.transform =
-            "translate(-50%, -50%) scale(1)";
-    });
-}
+    requestAnimationFrame(runLoader);
 
 
-/* =====================================================
-   SCROLL REVEAL ENGINE
-===================================================== */
+    /* =========================================================
+       EXPERIENCE START
+    ========================================================== */
 
-const revealElements = $$(".reveal");
+    function startExperience() {
 
-if ("IntersectionObserver" in window) {
+        body.classList.add("experience-ready");
 
-    const revealObserver =
-        new IntersectionObserver(
-            (entries, observer) => {
+        setupRevealAnimations();
+        setupNavigation();
+        setupSmoothLinks();
+        setupProjectHover();
+
+    }
+
+
+    /* =========================================================
+       REVEAL ANIMATIONS
+       IntersectionObserver is extremely lightweight.
+    ========================================================== */
+
+    function setupRevealAnimations() {
+
+        const elements = $$(".reveal");
+
+        if (!elements.length) return;
+
+
+        if (
+            reducedMotion ||
+            !("IntersectionObserver" in window)
+        ) {
+
+            elements.forEach((element) => {
+                element.classList.add("visible");
+            });
+
+            return;
+        }
+
+
+        const observer = new IntersectionObserver(
+            (entries, observerInstance) => {
 
                 entries.forEach((entry) => {
 
@@ -238,571 +141,272 @@ if ("IntersectionObserver" in window) {
 
                     entry.target.classList.add("visible");
 
-                    observer.unobserve(entry.target);
+                    observerInstance.unobserve(
+                        entry.target
+                    );
+
                 });
+
             },
             {
                 threshold: 0.12,
-                rootMargin: "0px 0px -60px 0px"
+                rootMargin: "0px 0px -50px 0px"
             }
         );
 
-    revealElements.forEach((element) => {
 
-        revealObserver.observe(element);
-    });
+        elements.forEach((element) => {
 
-} else {
+            observer.observe(element);
 
-    revealElements.forEach((element) => {
-
-        element.classList.add("visible");
-    });
-}
-
-
-/* =====================================================
-   STAGGERED CARD REVEAL
-===================================================== */
-
-const animatedGroups = [
-    ".technology-grid",
-    ".project-list",
-    ".intro-stat-grid"
-];
-
-animatedGroups.forEach((selector) => {
-
-    const group = $(selector);
-
-    if (!group) return;
-
-    const children =
-        [...group.children];
-
-    children.forEach((child, index) => {
-
-        child.style.transitionDelay =
-            `${index * 100}ms`;
-    });
-});
-
-
-/* =====================================================
-   MAGNETIC BUTTONS
-===================================================== */
-
-const magneticElements = $$(
-    ".primary-button, .secondary-button, .contact-button"
-);
-
-if (cursorSupported) {
-
-    magneticElements.forEach((element) => {
-
-        element.addEventListener("mousemove", (event) => {
-
-            const rect =
-                element.getBoundingClientRect();
-
-            const x =
-                event.clientX -
-                (rect.left + rect.width / 2);
-
-            const y =
-                event.clientY -
-                (rect.top + rect.height / 2);
-
-            const strength = 0.18;
-
-            element.style.transform =
-                `translate(${x * strength}px, ${y * strength}px)`;
         });
 
-        element.addEventListener("mouseleave", () => {
-
-            element.style.transform = "";
-        });
-    });
-}
-
-
-/* =====================================================
-   3D TILT CARDS
-===================================================== */
-
-const tiltCards = $$(".tech-card, .project-visual");
-
-if (cursorSupported) {
-
-    tiltCards.forEach((card) => {
-
-        card.addEventListener("mousemove", (event) => {
-
-            const rect =
-                card.getBoundingClientRect();
-
-            const x =
-                event.clientX - rect.left;
-
-            const y =
-                event.clientY - rect.top;
-
-            const centerX =
-                rect.width / 2;
-
-            const centerY =
-                rect.height / 2;
-
-            const rotateX =
-                ((y - centerY) / centerY) * -3;
-
-            const rotateY =
-                ((x - centerX) / centerX) * 3;
-
-            card.style.transform =
-                `perspective(900px)
-                 rotateX(${rotateX}deg)
-                 rotateY(${rotateY}deg)
-                 translateZ(0)`;
-        });
-
-        card.addEventListener("mouseleave", () => {
-
-            card.style.transform = "";
-        });
-    });
-}
-
-
-/* =====================================================
-   HERO MOUSE PARALLAX
-===================================================== */
-
-const hero =
-    $(".hero");
-
-const heroElements = [
-    {
-        element: $(".hero-content"),
-        strength: 0.012
-    },
-    {
-        element: $(".hero-orbit"),
-        strength: 0.025
-    },
-    {
-        element: $(".hero-grid"),
-        strength: 0.008
-    }
-];
-
-if (hero && cursorSupported) {
-
-    hero.addEventListener("mousemove", (event) => {
-
-        const x =
-            event.clientX / window.innerWidth - 0.5;
-
-        const y =
-            event.clientY / window.innerHeight - 0.5;
-
-        heroElements.forEach((item) => {
-
-            if (!item.element) return;
-
-            const moveX =
-                x *
-                window.innerWidth *
-                item.strength;
-
-            const moveY =
-                y *
-                window.innerHeight *
-                item.strength;
-
-            item.element.style.transform =
-                `translate3d(${moveX}px, ${moveY}px, 0)`;
-        });
-    });
-
-    hero.addEventListener("mouseleave", () => {
-
-        heroElements.forEach((item) => {
-
-            if (!item.element) return;
-
-            item.element.style.transform = "";
-        });
-    });
-}
-
-
-/* =====================================================
-   SCROLL PARALLAX
-===================================================== */
-
-const parallaxElements = $$(
-    ".ambient, .stars, .manifesto-orbit"
-);
-
-let ticking = false;
-
-const updateParallax = () => {
-
-    const scrollY =
-        window.scrollY;
-
-    parallaxElements.forEach((element, index) => {
-
-        const speed =
-            0.04 + index * 0.015;
-
-        element.style.transform =
-            `translate3d(0, ${scrollY * speed}px, 0)`;
-    });
-
-    ticking = false;
-};
-
-window.addEventListener("scroll", () => {
-
-    if (!ticking) {
-
-        requestAnimationFrame(updateParallax);
-
-        ticking = true;
-    }
-}, {
-    passive: true
-});
-
-
-/* =====================================================
-   NAVIGATION SCROLL EFFECT
-===================================================== */
-
-const navigation =
-    $(".navigation");
-
-const updateNavigation = () => {
-
-    if (!navigation) return;
-
-    if (window.scrollY > 50) {
-
-        navigation.style.background =
-            "rgba(2, 2, 4, 0.82)";
-
-        navigation.style.backdropFilter =
-            "blur(18px)";
-
-    } else {
-
-        navigation.style.background = "";
-
-        navigation.style.backdropFilter = "";
-    }
-};
-
-window.addEventListener(
-    "scroll",
-    updateNavigation,
-    { passive: true }
-);
-
-updateNavigation();
-
-
-/* =====================================================
-   SMOOTH ANCHOR NAVIGATION
-===================================================== */
-
-$$("a[href^='#']").forEach((link) => {
-
-    link.addEventListener("click", (event) => {
-
-        const targetID =
-            link.getAttribute("href");
-
-        if (
-            !targetID ||
-            targetID === "#"
-        ) return;
-
-        const target =
-            document.querySelector(targetID);
-
-        if (!target) return;
-
-        event.preventDefault();
-
-        target.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-    });
-});
-
-
-/* =====================================================
-   PROJECT HOVER VISUAL EFFECT
-===================================================== */
-
-$$(".project").forEach((project) => {
-
-    const visual =
-        $(".project-visual", project);
-
-    if (!visual) return;
-
-    project.addEventListener(
-        "mouseenter",
-        () => {
-
-            visual.style.transform =
-                "scale(1.025)";
-        }
-    );
-
-    project.addEventListener(
-        "mouseleave",
-        () => {
-
-            visual.style.transform = "";
-        }
-    );
-});
-
-
-/* =====================================================
-   RANDOM STAR FIELD
-===================================================== */
-
-const starContainer =
-    $(".stars");
-
-if (starContainer) {
-
-    const fragment =
-        document.createDocumentFragment();
-
-    const starCount =
-        window.innerWidth < 600
-            ? 35
-            : 75;
-
-    for (let i = 0; i < starCount; i++) {
-
-        const star =
-            document.createElement("span");
-
-        const size =
-            Math.random() * 2 + 1;
-
-        star.style.position = "absolute";
-
-        star.style.width =
-            `${size}px`;
-
-        star.style.height =
-            `${size}px`;
-
-        star.style.borderRadius =
-            "50%";
-
-        star.style.left =
-            `${Math.random() * 100}%`;
-
-        star.style.top =
-            `${Math.random() * 100}%`;
-
-        star.style.opacity =
-            `${Math.random() * 0.65 + 0.1}`;
-
-        star.style.background =
-            "rgba(255,255,255,0.8)";
-
-        star.style.animation =
-            `starTwinkle
-             ${2 + Math.random() * 5}s
-             ease-in-out
-             ${Math.random() * 4}s
-             infinite`;
-
-        fragment.appendChild(star);
     }
 
-    starContainer.appendChild(fragment);
-}
+
+    /* =========================================================
+       NAVIGATION
+       Uses a tiny passive scroll listener.
+    ========================================================== */
+
+    function setupNavigation() {
+
+        if (!navigation) return;
+
+        let ticking = false;
 
 
-/* =====================================================
-   DYNAMIC STAR ANIMATION
-===================================================== */
+        function updateNavigation() {
 
-if (!document.querySelector("#soham-star-animation")) {
+            if (window.scrollY > 30) {
 
-    const style =
-        document.createElement("style");
+                navigation.classList.add("scrolled");
 
-    style.id =
-        "soham-star-animation";
+            } else {
 
-    style.textContent = `
-        @keyframes starTwinkle {
+                navigation.classList.remove("scrolled");
 
-            0%, 100% {
-                opacity: 0.12;
-                transform: scale(0.7);
             }
 
-            50% {
-                opacity: 0.9;
-                transform: scale(1.35);
-            }
+            ticking = false;
         }
-    `;
 
-    document.head.appendChild(style);
-}
-
-
-/* =====================================================
-   IMAGE / MEDIA LAZY LOAD
-===================================================== */
-
-$$("img").forEach((image) => {
-
-    image.addEventListener("load", () => {
-
-        image.classList.add("loaded");
-    });
-});
-
-
-/* =====================================================
-   KEYBOARD ACCESSIBILITY
-===================================================== */
-
-document.addEventListener("keydown", (event) => {
-
-    if (event.key === "Escape") {
-
-        if (cursorRing) {
-
-            cursorRing.classList.remove("active");
-        }
-    }
-});
-
-
-/* =====================================================
-   PAGE VISIBILITY
-===================================================== */
-
-document.addEventListener(
-    "visibilitychange",
-    () => {
-
-        if (document.hidden) {
-
-            document.body.classList.add(
-                "page-paused"
-            );
-
-        } else {
-
-            document.body.classList.remove(
-                "page-paused"
-            );
-        }
-    }
-);
-
-
-/* =====================================================
-   EXPERIENCE INITIALIZER
-===================================================== */
-
-function initializeExperience() {
-
-    document.documentElement.style.scrollBehavior =
-        "smooth";
-
-    /*
-     * Initial reveal.
-     */
-
-    requestAnimationFrame(() => {
-
-        document.body.classList.add(
-            "experience-ready"
-        );
-    });
-
-    /*
-     * Trigger hero animations.
-     */
-
-    const heroWords =
-        $$(".hero-word");
-
-    heroWords.forEach((word, index) => {
-
-        word.style.animationDelay =
-            `${0.2 + index * 0.15}s`;
-    });
-
-    /*
-     * Start a tiny cinematic breathing
-     * effect on the main hero.
-     */
-
-    const heroTitle =
-        $(".hero-title");
-
-    if (heroTitle) {
-
-        let lastScroll =
-            window.scrollY;
 
         window.addEventListener(
             "scroll",
             () => {
 
-                const currentScroll =
-                    window.scrollY;
+                if (!ticking) {
 
-                if (
-                    Math.abs(
-                        currentScroll -
-                        lastScroll
-                    ) < 1
-                ) return;
-
-                const offset =
-                    Math.min(
-                        currentScroll * 0.05,
-                        35
+                    requestAnimationFrame(
+                        updateNavigation
                     );
 
-                heroTitle.style.transform =
-                    `translateY(${offset}px)`;
+                    ticking = true;
 
-                lastScroll =
-                    currentScroll;
+                }
+
             },
-            { passive: true }
+            {
+                passive: true
+            }
         );
+
+
+        updateNavigation();
+
     }
-}
 
 
-/* =====================================================
-   START
-===================================================== */
+    /* =========================================================
+       SMOOTH ANCHOR NAVIGATION
+    ========================================================== */
 
-runLoader();
+    function setupSmoothLinks() {
+
+        const links = $$('a[href^="#"]');
+
+        links.forEach((link) => {
+
+            link.addEventListener("click", (event) => {
+
+                const targetId =
+                    link.getAttribute("href");
+
+                if (
+                    !targetId ||
+                    targetId === "#"
+                ) {
+                    return;
+                }
+
+
+                const target =
+                    document.querySelector(targetId);
+
+                if (!target) return;
+
+                event.preventDefault();
+
+
+                const navigationHeight =
+                    navigation
+                        ? navigation.offsetHeight
+                        : 0;
+
+
+                const targetPosition =
+                    target.getBoundingClientRect().top +
+                    window.scrollY -
+                    navigationHeight;
+
+
+                if (reducedMotion) {
+
+                    window.scrollTo(
+                        0,
+                        targetPosition
+                    );
+
+                } else {
+
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: "smooth"
+                    });
+
+                }
+
+            });
+
+        });
+
+    }
+
+
+    /* =========================================================
+       PROJECT HOVER
+       No mouse coordinates.
+       No requestAnimationFrame.
+       No continuous animation.
+    ========================================================== */
+
+    function setupProjectHover() {
+
+        const projects = $$(".project");
+
+        projects.forEach((project) => {
+
+            project.addEventListener(
+                "mouseenter",
+                () => {
+
+                    project.classList.add(
+                        "project-active"
+                    );
+
+                }
+            );
+
+
+            project.addEventListener(
+                "mouseleave",
+                () => {
+
+                    project.classList.remove(
+                        "project-active"
+                    );
+
+                }
+            );
+
+        });
+
+    }
+
+
+    /* =========================================================
+       PAGE VISIBILITY
+       Prevents unnecessary work when tab is hidden.
+    ========================================================== */
+
+    document.addEventListener(
+        "visibilitychange",
+        () => {
+
+            if (
+                document.visibilityState === "hidden"
+            ) {
+
+                body.classList.add(
+                    "page-hidden"
+                );
+
+            } else {
+
+                body.classList.remove(
+                    "page-hidden"
+                );
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       IMAGE LAZY LOADING
+       Useful if you add images later.
+    ========================================================== */
+
+    $$("img").forEach((image) => {
+
+        if (!image.hasAttribute("loading")) {
+
+            image.setAttribute(
+                "loading",
+                "lazy"
+            );
+
+        }
+
+        image.setAttribute(
+            "decoding",
+            "async"
+        );
+
+    });
+
+
+    /* =========================================================
+       SAFETY FALLBACK
+       If something goes wrong with the loader,
+       reveal the website after a short time.
+    ========================================================== */
+
+    setTimeout(() => {
+
+        if (
+            preloader &&
+            document.body.classList.contains("loading")
+        ) {
+
+            preloader.classList.add("loaded");
+
+            setTimeout(() => {
+
+                if (preloader.isConnected) {
+                    preloader.remove();
+                }
+
+                body.classList.remove("loading");
+
+                startExperience();
+
+            }, 400);
+
+        }
+
+    }, 2500);
 
 });
