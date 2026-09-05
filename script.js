@@ -1,517 +1,300 @@
+/* ============================================================
+   SOHAM INDUSTRIES
+   PERFORMANCE-FIRST JAVASCRIPT
+============================================================ */
+
 "use strict";
 
-document.addEventListener("DOMContentLoaded", () => {
 
-    const $ = (selector) => document.querySelector(selector);
-    const $$ = (selector) => document.querySelectorAll(selector);
+/* ============================================================
+   DOM
+============================================================ */
 
-    const body = document.body;
-    const intro = $("#cinematicIntro");
-    const navigation = $("#navigation");
+const intro = document.getElementById("cinematicIntro");
+const mainSite = document.getElementById("mainSite");
+const navbar = document.querySelector(".navbar");
 
-    const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-
-    /* ==========================================================
-       INITIAL STATE
-    ========================================================== */
-
-    body.classList.add("loading");
+const revealElements = document.querySelectorAll(".reveal");
+const navLinks = document.querySelectorAll(".nav-links a");
+const projectItems = document.querySelectorAll(".project");
 
 
+/* ============================================================
+   EXACT 7 SECOND INTRO
+============================================================ */
 
-    /* ==========================================================
-       CINEMATIC INTRO
-       
-       Timeline:
-       
-       0ms       Black screen
-       250ms     Mathematics begins appearing
-       700ms     SOHAM appears
-       1200ms    INDUSTRIES appears
-       1800ms    Title flash
-       2200ms    Intro fades
-       2700ms    Website begins
-    ========================================================== */
+const INTRO_DURATION = 7000;
 
-    function startCinematicIntro() {
-
-        if (!intro) {
-            startWebsite();
-            return;
-        }
+document.body.classList.add("intro-active");
 
 
-        const formulas = $$(".formula");
+function finishIntro() {
+
+    if (!intro) {
+        document.body.classList.remove("intro-active");
+        return;
+    }
+
+    intro.classList.add("intro-finished");
+
+    document.body.classList.remove("intro-active");
+
+    if (mainSite) {
+        mainSite.classList.add("site-ready");
+    }
+
+    /*
+       Remove the intro from the page after the fade-out.
+       This prevents the intro from consuming resources.
+    */
+
+    window.setTimeout(() => {
+
+        intro.style.display = "none";
+
+    }, 800);
+}
 
 
-        if (reducedMotion) {
+/*
+   The intro begins at page load.
 
-            formulas.forEach((formula) => {
-                formula.classList.add("formula-visible");
-            });
+   7000ms = exactly 7 seconds.
 
-            intro.classList.add("title-visible");
+   CSS controls the cinematic animation while JS
+   controls the final cleanup.
+*/
 
-            setTimeout(() => {
-                finishIntro();
-            }, 600);
-
-            return;
-        }
+window.setTimeout(finishIntro, INTRO_DURATION);
 
 
-        /* ----------------------------------------------
-           Phase 1 — Mathematics
-        ---------------------------------------------- */
+/* ============================================================
+   FAILSAFE
+============================================================ */
 
-        setTimeout(() => {
+window.setTimeout(() => {
 
-            formulas.forEach((formula, index) => {
+    if (intro && intro.style.display !== "none") {
 
-                setTimeout(() => {
+        intro.style.opacity = "0";
+        intro.style.visibility = "hidden";
+        intro.style.pointerEvents = "none";
 
-                    formula.classList.add(
-                        "formula-visible"
-                    );
-
-                }, index * 55);
-
-            });
-
-        }, 180);
-
-
-        /* ----------------------------------------------
-           Phase 2 — Main title
-        ---------------------------------------------- */
-
-        setTimeout(() => {
-
-            intro.classList.add("title-visible");
-
-        }, 700);
-
-
-        /* ----------------------------------------------
-           Phase 3 — Flash
-        ---------------------------------------------- */
-
-        setTimeout(() => {
-
-            intro.classList.add("title-flash");
-
-        }, 1550);
-
-
-        /* ----------------------------------------------
-           Phase 4 — Fade out
-        ---------------------------------------------- */
-
-        setTimeout(() => {
-
-            finishIntro();
-
-        }, 2250);
+        document.body.classList.remove("intro-active");
 
     }
 
+}, 8500);
 
 
-    /* ==========================================================
-       FINISH INTRO
-    ========================================================== */
+/* ============================================================
+   SCROLL REVEALS
+============================================================ */
 
-    function finishIntro() {
+const revealObserver = new IntersectionObserver(
+    (entries, observer) => {
 
-        if (!intro) {
-            startWebsite();
-            return;
-        }
+        entries.forEach(entry => {
 
-        intro.classList.add("intro-finished");
-
-        setTimeout(() => {
-
-            if (intro.isConnected) {
-                intro.remove();
+            if (!entry.isIntersecting) {
+                return;
             }
 
-            body.classList.remove("loading");
+            entry.target.classList.add("visible");
 
-            startWebsite();
-
-        }, reducedMotion ? 0 : 650);
-
-    }
-
-
-
-    /* ==========================================================
-       START MAIN WEBSITE
-    ========================================================== */
-
-    function startWebsite() {
-
-        body.classList.add(
-            "experience-ready"
-        );
-
-        setupRevealAnimations();
-        setupNavigation();
-        setupSmoothLinks();
-        setupProjectHover();
-
-    }
-
-
-
-    /* ==========================================================
-       REVEAL ANIMATIONS
-       
-       IntersectionObserver is used instead of continuous
-       scroll animation.
-    ========================================================== */
-
-    function setupRevealAnimations() {
-
-        const elements = $$(".reveal");
-
-        if (!elements.length) {
-            return;
-        }
-
-
-        if (
-            reducedMotion ||
-            !("IntersectionObserver" in window)
-        ) {
-
-            elements.forEach((element) => {
-                element.classList.add("visible");
-            });
-
-            return;
-
-        }
-
-
-        const observer = new IntersectionObserver(
-            (entries, observerInstance) => {
-
-                entries.forEach((entry) => {
-
-                    if (!entry.isIntersecting) {
-                        return;
-                    }
-
-                    entry.target.classList.add(
-                        "visible"
-                    );
-
-                    observerInstance.unobserve(
-                        entry.target
-                    );
-
-                });
-
-            },
-            {
-                threshold: 0.12,
-                rootMargin: "0px 0px -45px 0px"
-            }
-        );
-
-
-        elements.forEach((element) => {
-
-            observer.observe(element);
+            observer.unobserve(entry.target);
 
         });
 
+    },
+    {
+        threshold: 0.12,
+        rootMargin: "0px 0px -40px 0px"
+    }
+);
+
+
+revealElements.forEach(element => {
+
+    revealObserver.observe(element);
+
+});
+
+
+/* ============================================================
+   NAVBAR SCROLL
+============================================================ */
+
+let scrollTicking = false;
+
+function updateNavbar() {
+
+    if (!navbar) {
+        return;
     }
 
+    if (window.scrollY > 40) {
+        navbar.classList.add("scrolled");
+    } else {
+        navbar.classList.remove("scrolled");
+    }
+
+    scrollTicking = false;
+}
 
 
-    /* ==========================================================
-       NAVIGATION
-       
-       One passive scroll listener.
-       No heavy calculations.
-       No parallax.
-    ========================================================== */
+window.addEventListener(
+    "scroll",
+    () => {
 
-    function setupNavigation() {
+        if (!scrollTicking) {
 
-        if (!navigation) {
+            window.requestAnimationFrame(updateNavbar);
+
+            scrollTicking = true;
+
+        }
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+/* ============================================================
+   SMOOTH NAVIGATION
+============================================================ */
+
+navLinks.forEach(link => {
+
+    link.addEventListener("click", event => {
+
+        const targetId = link.getAttribute("href");
+
+        if (!targetId || !targetId.startsWith("#")) {
             return;
         }
 
+        const target = document.querySelector(targetId);
 
-        let ticking = false;
-
-
-        function updateNavigation() {
-
-            if (window.scrollY > 35) {
-
-                navigation.classList.add(
-                    "scrolled"
-                );
-
-            } else {
-
-                navigation.classList.remove(
-                    "scrolled"
-                );
-
-            }
-
-            ticking = false;
-
+        if (!target) {
+            return;
         }
 
+        event.preventDefault();
 
-        window.addEventListener(
-            "scroll",
-            () => {
+        const navbarHeight = navbar
+            ? navbar.offsetHeight
+            : 0;
 
-                if (ticking) {
-                    return;
-                }
+        const targetPosition =
+            target.getBoundingClientRect().top +
+            window.scrollY -
+            navbarHeight;
 
-                ticking = true;
-
-                requestAnimationFrame(
-                    updateNavigation
-                );
-
-            },
-            {
-                passive: true
-            }
-        );
-
-
-        updateNavigation();
-
-    }
-
-
-
-    /* ==========================================================
-       SMOOTH NAVIGATION LINKS
-    ========================================================== */
-
-    function setupSmoothLinks() {
-
-        const links = $$(
-            'a[href^="#"]'
-        );
-
-
-        links.forEach((link) => {
-
-            link.addEventListener(
-                "click",
-                (event) => {
-
-                    const targetId =
-                        link.getAttribute("href");
-
-
-                    if (
-                        !targetId ||
-                        targetId === "#"
-                    ) {
-                        return;
-                    }
-
-
-                    const target =
-                        document.querySelector(
-                            targetId
-                        );
-
-
-                    if (!target) {
-                        return;
-                    }
-
-
-                    event.preventDefault();
-
-
-                    const navHeight =
-                        navigation
-                            ? navigation.offsetHeight
-                            : 0;
-
-
-                    const position =
-                        target.getBoundingClientRect()
-                            .top +
-                        window.scrollY -
-                        navHeight;
-
-
-                    if (reducedMotion) {
-
-                        window.scrollTo(
-                            0,
-                            position
-                        );
-
-                    } else {
-
-                        window.scrollTo({
-
-                            top: position,
-
-                            behavior: "smooth"
-
-                        });
-
-                    }
-
-                }
-            );
-
+        window.scrollTo({
+            top: targetPosition,
+            behavior: "smooth"
         });
-
-    }
-
-
-
-    /* ==========================================================
-       PROJECT HOVER
-       
-       Simple class toggle.
-       No mouse tracking.
-       No animation loop.
-    ========================================================== */
-
-    function setupProjectHover() {
-
-        const projects = $$(".project");
-
-
-        projects.forEach((project) => {
-
-            project.addEventListener(
-                "mouseenter",
-                () => {
-
-                    project.classList.add(
-                        "project-active"
-                    );
-
-                }
-            );
-
-
-            project.addEventListener(
-                "mouseleave",
-                () => {
-
-                    project.classList.remove(
-                        "project-active"
-                    );
-
-                }
-            );
-
-        });
-
-    }
-
-
-
-    /* ==========================================================
-       IMAGE OPTIMIZATION
-       
-       Future images automatically get lazy loading.
-    ========================================================== */
-
-    $$("img").forEach((image) => {
-
-        if (!image.hasAttribute("loading")) {
-
-            image.setAttribute(
-                "loading",
-                "lazy"
-            );
-
-        }
-
-        image.setAttribute(
-            "decoding",
-            "async"
-        );
 
     });
 
+});
 
 
-    /* ==========================================================
-       PAGE VISIBILITY
-    ========================================================== */
+/* ============================================================
+   PROJECT HOVER
+   Lightweight interaction only.
+============================================================ */
 
-    document.addEventListener(
-        "visibilitychange",
+projectItems.forEach(project => {
+
+    project.addEventListener(
+        "mouseenter",
         () => {
-
-            if (
-                document.visibilityState ===
-                "hidden"
-            ) {
-
-                body.classList.add(
-                    "page-hidden"
-                );
-
-            } else {
-
-                body.classList.remove(
-                    "page-hidden"
-                );
-
-            }
-
+            project.classList.add("active");
+        },
+        {
+            passive: true
         }
     );
 
+    project.addEventListener(
+        "mouseleave",
+        () => {
+            project.classList.remove("active");
+        },
+        {
+            passive: true
+        }
+    );
+
+});
 
 
-    /* ==========================================================
-       START
-    ========================================================== */
+/* ============================================================
+   IMAGE OPTIMIZATION
+============================================================ */
 
-    startCinematicIntro();
+document.querySelectorAll("img").forEach(image => {
+
+    image.loading = "lazy";
+
+    image.decoding = "async";
+
+});
 
 
+/* ============================================================
+   PAGE VISIBILITY
+============================================================ */
 
-    /* ==========================================================
-       FAILSAFE
-       
-       The website will never remain stuck behind the intro.
-    ========================================================== */
+document.addEventListener(
+    "visibilitychange",
+    () => {
 
-    setTimeout(() => {
+        if (document.hidden) {
 
-        if (
-            intro &&
-            document.body.classList.contains(
-                "loading"
-            )
-        ) {
+            document.body.classList.add("page-hidden");
 
-            finishIntro();
+        } else {
+
+            document.body.classList.remove("page-hidden");
 
         }
 
-    }, 4500);
+    }
+);
 
-});
+
+/* ============================================================
+   MOBILE MENU
+============================================================ */
+
+const menuButton = document.querySelector(".nav-menu");
+
+if (menuButton) {
+
+    menuButton.addEventListener("click", () => {
+
+        document.body.classList.toggle("menu-open");
+
+    });
+
+}
+
+
+/* ============================================================
+   CONSOLE
+============================================================ */
+
+console.log(
+    "%cSOHAM INDUSTRIES",
+    "font-size:20px;font-weight:bold;"
+);
+
+console.log(
+    "%cENGINEERING THE FUTURE.",
+    "font-size:12px;"
+);
