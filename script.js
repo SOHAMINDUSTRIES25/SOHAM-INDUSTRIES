@@ -16,7 +16,7 @@ const SUPABASE_URL = "https://zqxnumdpefndysbkrrcy.supabase.co";
 
    Do NOT use the secret/service-role key.
 */
-const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NY-WNgp08StgIBuTj8xoCA_x2tIL-ex";
 
 
 // Make sure Supabase CDN is loaded
