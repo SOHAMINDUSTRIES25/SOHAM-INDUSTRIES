@@ -110,9 +110,7 @@ const runLoader = () => {
 };
 
 
-/* =====================================================
-   CUSTOM CURSOR
-===================================================== */
+
 
 let cursorDot = $(".cursor-dot");
 let cursorRing = $(".cursor-ring");
