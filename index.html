@@ -4,583 +4,1282 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SOHAM INDUSTRIES</title>
-
     <meta
         name="description"
-        content="SOHAM INDUSTRIES — Engineering the Future."
+        content="SOHAM INDUSTRIES creates modern, cinematic and high-performance websites for businesses, creators and organizations."
     >
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="theme-color" content="#050505">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet"
-    >
+    <title>SOHAM INDUSTRIES — Engineering Digital Experiences</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- =========================================================
-         CINEMATIC 7 SECOND INTRO
-    ========================================================== -->
+<!-- =========================================================
+     CINEMATIC INTRO
+========================================================= -->
 
-    <section id="cinematicIntro" class="cinematic-intro">
+<div id="cinematic-intro">
 
-        <div class="intro-noise"></div>
+    <div class="intro-grid"></div>
 
-        <div class="intro-grid"></div>
+    <div class="intro-noise"></div>
 
-        <div class="formula formula-1">sin²θ + cos²θ = 1</div>
-        <div class="formula formula-2">∫ x² dx</div>
-        <div class="formula formula-3">tan θ = sin θ / cos θ</div>
-        <div class="formula formula-4">lim x → ∞</div>
-        <div class="formula formula-5">Σ F = ma</div>
-        <div class="formula formula-6">∂²u / ∂t²</div>
-        <div class="formula formula-7">√(a² + b²)</div>
-        <div class="formula formula-8">eˣ</div>
-        <div class="formula formula-9">dy / dx</div>
-        <div class="formula formula-10">∫₀∞ e⁻ˣ dx</div>
-        <div class="formula formula-11">PV = nRT</div>
-        <div class="formula formula-12">F = Gm₁m₂ / r²</div>
+    <div class="intro-corner intro-top-left">
+        SYSTEM / SOHAM-01
+    </div>
 
-        <div class="intro-line intro-line-horizontal"></div>
-        <div class="intro-line intro-line-vertical"></div>
+    <div class="intro-corner intro-top-right">
+        DIGITAL ENGINEERING
+    </div>
 
-        <div class="intro-center">
+    <div class="intro-corner intro-bottom-left">
+        BUILD • DESIGN • SCALE
+    </div>
 
-            <div class="intro-small">
-                SYSTEM INITIALIZING
-            </div>
+    <div class="intro-corner intro-bottom-right">
+        2026
+    </div>
 
-            <h1 class="intro-title">
-                <span>SOHAM</span>
-                <span>INDUSTRIES</span>
-            </h1>
+    <div class="formula formula-1">sin²θ + cos²θ = 1</div>
+    <div class="formula formula-2">∫ x² dx</div>
+    <div class="formula formula-3">tan θ = sin θ / cos θ</div>
+    <div class="formula formula-4">lim x → ∞</div>
+    <div class="formula formula-5">Σ F = ma</div>
+    <div class="formula formula-6">∂²u / ∂t²</div>
+    <div class="formula formula-7">√(a² + b²)</div>
+    <div class="formula formula-8">eˣ</div>
+    <div class="formula formula-9">dy / dx</div>
+    <div class="formula formula-10">∫₀∞ e⁻ˣ dx</div>
+    <div class="formula formula-11">PV = nRT</div>
+    <div class="formula formula-12">F = Gm₁m₂ / r²</div>
 
-            <div class="intro-tagline">
-                ENGINEERING THE FUTURE
-            </div>
+    <div class="intro-center">
 
+        <div class="intro-system">
+            INITIALIZING DIGITAL SYSTEM
         </div>
 
-        <div class="intro-corner intro-corner-tl">SI / 001</div>
-        <div class="intro-corner intro-corner-tr">ENGINEERING SYSTEM</div>
-        <div class="intro-corner intro-corner-bl">25°N / 73°E</div>
-        <div class="intro-corner intro-corner-br">EST. 2026</div>
-
-        <div class="intro-progress">
-            <div class="intro-progress-bar"></div>
+        <div class="intro-title">
+            <span>SOHAM</span>
+            <span>INDUSTRIES</span>
         </div>
 
-    </section>
-
-
-    <!-- =========================================================
-         MAIN WEBSITE
-    ========================================================== -->
-
-    <div id="mainSite" class="main-site">
-
-        <!-- BACKGROUND -->
-        <div class="ambient-background">
-            <div class="ambient-glow glow-one"></div>
-            <div class="ambient-glow glow-two"></div>
-            <div class="ambient-glow glow-three"></div>
-
-            <div class="stars"></div>
+        <div id="intro-users">
+            50 - 100+ USERS DAILY
         </div>
 
+        <div class="intro-tagline">
+            ENGINEERING THE FUTURE
+        </div>
 
-        <!-- =====================================================
-             NAVIGATION
-        ====================================================== -->
+    </div>
 
-        <header class="navbar">
+    <div class="intro-progress">
+        <div id="intro-progress-bar"></div>
+    </div>
 
-            <a href="#home" class="brand">
-                <span class="brand-mark">S</span>
-                <span class="brand-text">
-                    SOHAM<span>.</span>INDUSTRIES
-                </span>
+    <div class="intro-status">
+        <span>SYSTEM ONLINE</span>
+        <span id="intro-percent">0%</span>
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MAIN WEBSITE
+========================================================= -->
+
+<div id="main-site">
+
+<!-- =========================================================
+     NAVBAR
+========================================================= -->
+
+<header class="navbar" id="navbar">
+
+    <a href="#home" class="brand">
+        <span class="brand-main">SOHAM</span>
+        <span class="brand-sub">INDUSTRIES</span>
+    </a>
+
+    <nav class="nav-links">
+
+        <a href="#home" class="nav-link active">HOME</a>
+        <a href="#about" class="nav-link">ABOUT</a>
+        <a href="#services" class="nav-link">SERVICES</a>
+        <a href="#packages" class="nav-link">PACKAGES</a>
+        <a href="#projects" class="nav-link">PROJECTS</a>
+        <a href="#contact" class="nav-link">CONTACT</a>
+
+        <button class="nav-login" id="open-login">
+            LOGIN
+        </button>
+
+    </nav>
+
+    <button class="mobile-menu" id="mobile-menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+</header>
+
+
+<!-- =========================================================
+     HOME
+========================================================= -->
+
+<main>
+
+<section class="hero section" id="home">
+
+    <div class="hero-background-grid"></div>
+
+    <div class="hero-glow glow-one"></div>
+    <div class="hero-glow glow-two"></div>
+
+    <div class="hero-content reveal">
+
+        <div class="eyebrow">
+            <span></span>
+            DIGITAL ENGINEERING STUDIO
+        </div>
+
+        <h1>
+            YOUR BUSINESS
+            <strong>DESERVES</strong>
+            A BETTER WEBSITE.
+        </h1>
+
+        <p class="hero-description">
+            We design and build modern digital experiences that make
+            businesses look professional, communicate their value and
+            turn visitors into customers.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="#packages" class="btn btn-primary">
+                BUILD MY WEBSITE
+                <span>↗</span>
             </a>
 
-            <nav class="nav-links">
+            <a href="#projects" class="btn btn-secondary">
+                EXPLORE PROJECT TYPES
+            </a>
 
-                <a href="#home">HOME</a>
-                <a href="#about">ABOUT</a>
-                <a href="#technology">TECHNOLOGY</a>
-                <a href="#projects">PROJECTS</a>
-                <a href="#contact">CONTACT</a>
+        </div>
 
-            </nav>
+        <div class="hero-stats">
 
-            <button class="nav-menu" aria-label="Open menu">
-                <span></span>
-                <span></span>
-            </button>
-
-        </header>
-
-
-        <!-- =====================================================
-             HERO
-        ====================================================== -->
-
-        <main>
-
-            <section id="home" class="hero section">
-
-                <div class="hero-content reveal">
-
-                    <div class="eyebrow">
-                        <span class="eyebrow-line"></span>
-                        ADVANCED ENGINEERING SYSTEMS
-                    </div>
-
-                    <h1 class="hero-title">
-                        BUILDING
-                        <span>WHAT COMES NEXT.</span>
-                    </h1>
-
-                    <p class="hero-description">
-                        SOHAM INDUSTRIES combines engineering,
-                        technology and precision to create solutions
-                        designed for the future.
-                    </p>
-
-                    <div class="hero-actions">
-
-                        <a href="#projects" class="button button-primary">
-                            EXPLORE PROJECTS
-                            <span>↗</span>
-                        </a>
-
-                        <a href="#about" class="button button-secondary">
-                            DISCOVER SOHAM
-                        </a>
-
-                    </div>
-
-                </div>
-
-
-                <div class="hero-visual reveal">
-
-                    <div class="orbit orbit-one"></div>
-                    <div class="orbit orbit-two"></div>
-                    <div class="orbit orbit-three"></div>
-
-                    <div class="core">
-
-                        <div class="core-inner">
-                            S
-                        </div>
-
-                    </div>
-
-                    <div class="visual-label label-top">
-                        PRECISION / 01
-                    </div>
-
-                    <div class="visual-label label-bottom">
-                        SYSTEM ONLINE
-                    </div>
-
-                </div>
-
-                <div class="hero-scroll">
-                    <span>SCROLL TO EXPLORE</span>
-                    <div class="scroll-line"></div>
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 ABOUT
-            ================================================== -->
-
-            <section id="about" class="about section">
-
-                <div class="section-header reveal">
-
-                    <div class="section-number">
-                        01 / 04
-                    </div>
-
-                    <div>
-                        <div class="section-kicker">
-                            WHO WE ARE
-                        </div>
-
-                        <h2>
-                            ENGINEERING
-                            <span>WITHOUT LIMITS.</span>
-                        </h2>
-                    </div>
-
-                </div>
-
-
-                <div class="about-grid">
-
-                    <div class="about-main reveal">
-
-                        <p class="large-text">
-                            We believe the future is not something
-                            you wait for. It is something you engineer.
-                        </p>
-
-                    </div>
-
-                    <div class="about-side reveal">
-
-                        <p>
-                            SOHAM INDUSTRIES is built around one
-                            principle — transform ideas into
-                            precise, scalable and meaningful
-                            engineering solutions.
-                        </p>
-
-                        <p>
-                            From concept to execution, every detail
-                            is designed with performance, reliability
-                            and innovation in mind.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 TECHNOLOGY
-            ================================================== -->
-
-            <section id="technology" class="technology section">
-
-                <div class="section-header reveal">
-
-                    <div class="section-number">
-                        02 / 04
-                    </div>
-
-                    <div>
-                        <div class="section-kicker">
-                            OUR CAPABILITIES
-                        </div>
-
-                        <h2>
-                            TECHNOLOGY
-                            <span>IN MOTION.</span>
-                        </h2>
-                    </div>
-
-                </div>
-
-
-                <div class="technology-grid">
-
-                    <article class="tech-card reveal">
-
-                        <div class="tech-number">01</div>
-
-                        <div class="tech-icon">⌬</div>
-
-                        <h3>
-                            PRECISION
-                        </h3>
-
-                        <p>
-                            Engineering systems designed around
-                            accuracy, consistency and performance.
-                        </p>
-
-                        <div class="card-line"></div>
-
-                    </article>
-
-
-                    <article class="tech-card reveal">
-
-                        <div class="tech-number">02</div>
-
-                        <div class="tech-icon">◈</div>
-
-                        <h3>
-                            INNOVATION
-                        </h3>
-
-                        <p>
-                            Turning ambitious ideas into practical
-                            technologies and intelligent solutions.
-                        </p>
-
-                        <div class="card-line"></div>
-
-                    </article>
-
-
-                    <article class="tech-card reveal">
-
-                        <div class="tech-number">03</div>
-
-                        <div class="tech-icon">△</div>
-
-                        <h3>
-                            PERFORMANCE
-                        </h3>
-
-                        <p>
-                            Systems engineered to perform reliably
-                            under demanding conditions.
-                        </p>
-
-                        <div class="card-line"></div>
-
-                    </article>
-
-
-                    <article class="tech-card reveal">
-
-                        <div class="tech-number">04</div>
-
-                        <div class="tech-icon">∞</div>
-
-                        <h3>
-                            FUTURE
-                        </h3>
-
-                        <p>
-                            Building technology that remains ready
-                            for what comes next.
-                        </p>
-
-                        <div class="card-line"></div>
-
-                    </article>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 MANIFESTO
-            ================================================== -->
-
-            <section class="manifesto section">
-
-                <div class="manifesto-inner reveal">
-
-                    <div class="manifesto-line"></div>
-
-                    <div class="manifesto-label">
-                        OUR PHILOSOPHY
-                    </div>
-
-                    <h2>
-                        THINK
-                        <span>BEYOND.</span>
-                    </h2>
-
-                    <p>
-                        Design with purpose.
-                        Engineer with precision.
-                        Build for tomorrow.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 PROJECTS
-            ================================================== -->
-
-            <section id="projects" class="projects section">
-
-                <div class="section-header reveal">
-
-                    <div class="section-number">
-                        03 / 04
-                    </div>
-
-                    <div>
-                        <div class="section-kicker">
-                            SELECTED WORK
-                        </div>
-
-                        <h2>
-                            PROJECTS
-                            <span>IN DEVELOPMENT.</span>
-                        </h2>
-                    </div>
-
-                </div>
-
-
-                <div class="project-list">
-
-                    <article class="project reveal">
-
-                        <div class="project-index">
-                            01
-                        </div>
-
-                        <div class="project-info">
-
-                            <span>ENGINEERING</span>
-
-                            <h3>
-                                PROJECT ALPHA
-                            </h3>
-
-                            <p>
-                                Advanced industrial engineering
-                                concept.
-                            </p>
-
-                        </div>
-
-                        <div class="project-arrow">
-                            ↗
-                        </div>
-
-                    </article>
-
-
-                    <article class="project reveal">
-
-                        <div class="project-index">
-                            02
-                        </div>
-
-                        <div class="project-info">
-
-                            <span>TECHNOLOGY</span>
-
-                            <h3>
-                                PROJECT VECTOR
-                            </h3>
-
-                            <p>
-                                Intelligent technology and systems
-                                research.
-                            </p>
-
-                        </div>
-
-                        <div class="project-arrow">
-                            ↗
-                        </div>
-
-                    </article>
-
-
-                    <article class="project reveal">
-
-                        <div class="project-index">
-                            03
-                        </div>
-
-                        <div class="project-info">
-
-                            <span>FUTURE SYSTEMS</span>
-
-                            <h3>
-                                PROJECT NEXUS
-                            </h3>
-
-                            <p>
-                                Next-generation engineering
-                                infrastructure.
-                            </p>
-
-                        </div>
-
-                        <div class="project-arrow">
-                            ↗
-                        </div>
-
-                    </article>
-
-                </div>
-
-            </section>
-
-
-            <!-- =================================================
-                 CONTACT
-            ================================================== -->
-
-            <section id="contact" class="contact section">
-
-                <div class="contact-box reveal">
-
-                    <div class="section-number">
-                        04 / 04
-                    </div>
-
-                    <div class="section-kicker">
-                        START A CONVERSATION
-                    </div>
-
-                    <h2>
-                        HAVE AN IDEA?
-                        <span>LET'S BUILD IT.</span>
-                    </h2>
-
-                    <p>
-                        Have a project, concept or engineering
-                        challenge? Let's turn the idea into reality.
-                    </p>
-
-                    <a href="mailto:contact@sohamindustries.com"
-                       class="contact-button">
-                        CONTACT SOHAM
-                        <span>↗</span>
-                    </a>
-
-                </div>
-
-            </section>
-
-        </main>
-
-
-        <!-- =====================================================
-             FOOTER
-        ====================================================== -->
-
-        <footer class="footer">
-
-            <div class="footer-brand">
-                SOHAM<span>.</span>INDUSTRIES
+            <div>
+                <strong>01</strong>
+                <span>DESIGN</span>
             </div>
 
-            <div class="footer-copy">
-                © 2026 SOHAM INDUSTRIES. ALL RIGHTS RESERVED.
+            <div>
+                <strong>02</strong>
+                <span>DEVELOPMENT</span>
             </div>
 
-            <div class="footer-status">
-                <span class="status-dot"></span>
-                SYSTEM OPERATIONAL
+            <div>
+                <strong>03</strong>
+                <span>DEPLOYMENT</span>
             </div>
 
-        </footer>
+        </div>
+
+    </div>
+
+    <div class="hero-side-text">
+        SOHAM / DIGITAL / 2026
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     ABOUT
+========================================================= -->
+
+<section class="section about-section" id="about">
+
+    <div class="section-header reveal">
+
+        <div>
+            <span class="section-number">01 / ABOUT</span>
+
+            <h2>
+                WE DON'T JUST
+                <span>MAKE WEBSITES.</span>
+            </h2>
+        </div>
+
+        <p>
+            We create digital identities for businesses that want
+            to stand out.
+        </p>
 
     </div>
 
 
-    <script src="script.js"></script>
+    <div class="about-grid">
+
+        <div class="about-main reveal">
+
+            <div class="large-number">S</div>
+
+            <h3>
+                SOHAM INDUSTRIES
+            </h3>
+
+            <p>
+                SOHAM INDUSTRIES is a digital development studio focused
+                on creating modern websites for businesses, organizations,
+                creators and professionals.
+            </p>
+
+            <p>
+                From a simple business website to a premium digital
+                experience, our goal is to combine strong design,
+                responsive development and meaningful user experiences.
+            </p>
+
+            <p>
+                Your website is often the first impression people get
+                of your business. We build it to make that impression count.
+            </p>
+
+        </div>
+
+
+        <div class="about-features reveal">
+
+            <div class="feature-card">
+                <span>01</span>
+                <h4>MODERN DESIGN</h4>
+                <p>
+                    Clean, premium and memorable interfaces designed
+                    around your brand.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span>02</span>
+                <h4>RESPONSIVE</h4>
+                <p>
+                    Websites designed to work across phones,
+                    tablets and desktops.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span>03</span>
+                <h4>PERFORMANCE</h4>
+                <p>
+                    Smooth experiences without unnecessary heavy
+                    animations slowing your website down.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span>04</span>
+                <h4>SCALABLE</h4>
+                <p>
+                    Built so your website can grow as your business grows.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     SERVICES
+========================================================= -->
+
+<section class="section services-section" id="services">
+
+    <div class="section-header reveal">
+
+        <div>
+            <span class="section-number">02 / SERVICES</span>
+
+            <h2>
+                EVERYTHING YOUR
+                <span>WEBSITE NEEDS.</span>
+            </h2>
+        </div>
+
+        <p>
+            From the first visual concept to the final launch.
+        </p>
+
+    </div>
+
+
+    <div class="services-grid">
+
+        <article class="service-card reveal">
+            <div class="service-number">01</div>
+            <h3>BUSINESS WEBSITES</h3>
+            <p>
+                Professional websites designed to establish trust
+                and present your business clearly.
+            </p>
+            <span class="service-arrow">↗</span>
+        </article>
+
+        <article class="service-card reveal">
+            <div class="service-number">02</div>
+            <h3>E-COMMERCE</h3>
+            <p>
+                Product-focused online experiences designed around
+                discovery and conversion.
+            </p>
+            <span class="service-arrow">↗</span>
+        </article>
+
+        <article class="service-card reveal">
+            <div class="service-number">03</div>
+            <h3>LANDING PAGES</h3>
+            <p>
+                Focused pages designed to communicate one powerful
+                message and drive action.
+            </p>
+            <span class="service-arrow">↗</span>
+        </article>
+
+        <article class="service-card reveal">
+            <div class="service-number">04</div>
+            <h3>CUSTOM EXPERIENCES</h3>
+            <p>
+                Unique websites for brands that need something
+                beyond a standard template.
+            </p>
+            <span class="service-arrow">↗</span>
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     PACKAGES
+========================================================= -->
+
+<section class="section packages-section" id="packages">
+
+    <div class="section-header reveal">
+
+        <div>
+            <span class="section-number">03 / PACKAGES</span>
+
+            <h2>
+                CHOOSE YOUR
+                <span>LEVEL.</span>
+            </h2>
+        </div>
+
+        <p>
+            Start simple. Upgrade when your business is ready.
+        </p>
+
+    </div>
+
+
+    <div class="packages-grid">
+
+        <!-- SILVER -->
+
+        <article class="package-card reveal">
+
+            <div class="package-top">
+                <span>01</span>
+                <span>STARTER</span>
+            </div>
+
+            <h3>SILVER</h3>
+
+            <div class="package-price">
+                ₹5,000
+                <span>— ₹10,000</span>
+            </div>
+
+            <p class="package-description">
+                A strong digital foundation for individuals
+                and small businesses.
+            </p>
+
+            <ul>
+                <li>✓ Professional website</li>
+                <li>✓ Responsive design</li>
+                <li>✓ Essential pages</li>
+                <li>✓ Contact section</li>
+                <li>✓ Basic animations</li>
+                <li>✓ Mobile optimization</li>
+            </ul>
+
+            <button
+                class="package-button"
+                data-package="SILVER"
+            >
+                CHOOSE SILVER
+                <span>↗</span>
+            </button>
+
+        </article>
+
+
+        <!-- GOLD -->
+
+        <article class="package-card featured reveal">
+
+            <div class="popular-label">
+                MOST POPULAR
+            </div>
+
+            <div class="package-top">
+                <span>02</span>
+                <span>BUSINESS</span>
+            </div>
+
+            <h3>GOLD</h3>
+
+            <div class="package-price">
+                ₹15,000
+                <span>— ₹35,000</span>
+            </div>
+
+            <p class="package-description">
+                A complete premium business website built
+                to create a stronger online presence.
+            </p>
+
+            <ul>
+                <li>✓ Everything in Silver</li>
+                <li>✓ Premium UI/UX</li>
+                <li>✓ Advanced animations</li>
+                <li>✓ Custom sections</li>
+                <li>✓ SEO-ready structure</li>
+                <li>✓ Enhanced interactions</li>
+            </ul>
+
+            <button
+                class="package-button"
+                data-package="GOLD"
+            >
+                CHOOSE GOLD
+                <span>↗</span>
+            </button>
+
+        </article>
+
+
+        <!-- PREMIUM -->
+
+        <article class="package-card reveal">
+
+            <div class="package-top">
+                <span>03</span>
+                <span>ENTERPRISE</span>
+            </div>
+
+            <h3>PREMIUM</h3>
+
+            <div class="package-price">
+                ₹50,000
+                <span>— ₹2,00,000</span>
+            </div>
+
+            <p class="package-description">
+                A high-end custom digital experience for brands
+                that want something exceptional.
+            </p>
+
+            <ul>
+                <li>✓ Everything in Gold</li>
+                <li>✓ Fully custom design</li>
+                <li>✓ Advanced interactions</li>
+                <li>✓ Custom functionality</li>
+                <li>✓ E-commerce capability</li>
+                <li>✓ Scalable architecture</li>
+            </ul>
+
+            <button
+                class="package-button"
+                data-package="PREMIUM"
+            >
+                CHOOSE PREMIUM
+                <span>↗</span>
+            </button>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     MANIFESTO / SALES SECTION
+========================================================= -->
+
+<section class="manifesto section">
+
+    <div class="manifesto-inner reveal">
+
+        <span class="section-number">
+            WHY YOUR WEBSITE MATTERS
+        </span>
+
+        <h2>
+            PEOPLE DON'T JUST
+            <span>BUY PRODUCTS.</span>
+            THEY BUY
+            <span>TRUST.</span>
+        </h2>
+
+        <p>
+            A professional website can explain what you do,
+            show what you offer and give potential customers
+            a place to take the next step.
+        </p>
+
+        <a href="#contact" class="btn btn-primary">
+            START YOUR PROJECT
+            <span>↗</span>
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     PROJECT CATEGORIES
+========================================================= -->
+
+<section class="section projects-section" id="projects">
+
+    <div class="section-header reveal">
+
+        <div>
+            <span class="section-number">04 / PROJECTS</span>
+
+            <h2>
+                WHAT CAN WE
+                <span>BUILD?</span>
+            </h2>
+        </div>
+
+        <p>
+            Choose the type of website that fits your business.
+        </p>
+
+    </div>
+
+
+    <div class="project-grid">
+
+        <article class="project-card reveal" data-type="Café">
+
+            <div
+                class="project-image"
+                style="--image: url('assets/projects/cafe.jpg');"
+            >
+                <div class="project-overlay"></div>
+                <span>01</span>
+            </div>
+
+            <div class="project-info">
+                <h3>CAFÉ</h3>
+                <p>Menus • Location • Story • Reservations</p>
+                <button class="project-select" data-type="Café">
+                    SELECT
+                </button>
+            </div>
+
+        </article>
+
+
+        <article class="project-card reveal" data-type="Restaurant">
+
+            <div
+                class="project-image"
+                style="--image: url('assets/projects/restaurant.jpg');"
+            >
+                <div class="project-overlay"></div>
+                <span>02</span>
+            </div>
+
+            <div class="project-info">
+                <h3>RESTAURANT</h3>
+                <p>Menu • Gallery • Location • Enquiries</p>
+                <button class="project-select" data-type="Restaurant">
+                    SELECT
+                </button>
+            </div>
+
+        </article>
+
+
+        <article class="project-card reveal" data-type="E-commerce">
+
+            <div
+                class="project-image"
+                style="--image: url('assets/projects/ecommerce.jpg');"
+            >
+                <div class="project-overlay"></div>
+                <span>03</span>
+            </div>
+
+            <div class="project-info">
+                <h3>E-COMMERCE</h3>
+                <p>Products • Categories • Shopping • Checkout</p>
+                <button class="project-select" data-type="E-commerce">
+                    SELECT
+                </button>
+            </div>
+
+        </article>
+
+
+        <article class="project-card reveal" data-type="Gym">
+
+            <div
+                class="project-image"
+                style="--image: url('assets/projects/gym.jpg');"
+            >
+                <div class="project-overlay"></div>
+                <span>04</span>
+            </div>
+
+            <div class="project-info">
+                <h3>GYM</h3>
+                <p>Programs • Trainers • Membership • Contact</p>
+                <button class="project-select" data-type="Gym">
+                    SELECT
+                </button>
+            </div>
+
+        </article>
+
+
+        <article class="project-card reveal" data-type="Coaching">
+
+            <div
+                class="project-image"
+                style="--image: url('assets/projects/coaching.jpg');"
+            >
+                <div class="project-overlay"></div>
+                <span>05</span>
+            </div>
+
+            <div class="project-info">
+                <h3>COACHING</h3>
+                <p>Courses • Faculty • Results • Admissions</p>
+                <button class="project-select" data-type="Coaching">
+                    SELECT
+                </button>
+            </div>
+
+        </article>
+
+
+        <article class="project-card reveal" data-type="Corporate">
+
+            <div
+                class="project-image"
+                style="--image: url('assets/projects/corporate.jpg');"
+            >
+                <div class="project-overlay"></div>
+                <span>06</span>
+            </div>
+
+            <div class="project-info">
+                <h3>CORPORATE</h3>
+                <p>Company • Services • Careers • Contact</p>
+                <button class="project-select" data-type="Corporate">
+                    SELECT
+                </button>
+            </div>
+
+        </article>
+
+
+        <article class="project-card reveal" data-type="Real Estate">
+
+            <div
+                class="project-image"
+                style="--image: url('assets/projects/real-estate.jpg');"
+            >
+                <div class="project-overlay"></div>
+                <span>07</span>
+            </div>
+
+            <div class="project-info">
+                <h3>REAL ESTATE</h3>
+                <p>Properties • Gallery • Enquiries • Locations</p>
+                <button class="project-select" data-type="Real Estate">
+                    SELECT
+                </button>
+            </div>
+
+        </article>
+
+
+        <article class="project-card reveal" data-type="Portfolio">
+
+            <div
+                class="project-image"
+                style="--image: url('assets/projects/portfolio.jpg');"
+            >
+                <div class="project-overlay"></div>
+                <span>08</span>
+            </div>
+
+            <div class="project-info">
+                <h3>PORTFOLIO</h3>
+                <p>Projects • Skills • Experience • Contact</p>
+                <button class="project-select" data-type="Portfolio">
+                    SELECT
+                </button>
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CONTACT
+========================================================= -->
+
+<section class="section contact-section" id="contact">
+
+    <div class="contact-grid">
+
+        <div class="contact-content reveal">
+
+            <span class="section-number">05 / CONTACT</span>
+
+            <h2>
+                HAVE AN IDEA?
+                <span>LET'S BUILD IT.</span>
+            </h2>
+
+            <p>
+                Tell us what you need. Choose a package, select
+                your website type and describe your vision.
+            </p>
+
+            <div class="contact-details">
+
+                <div>
+                    <span>01</span>
+                    <strong>CHOOSE</strong>
+                    <small>Select your package.</small>
+                </div>
+
+                <div>
+                    <span>02</span>
+                    <strong>DESCRIBE</strong>
+                    <small>Tell us about your website.</small>
+                </div>
+
+                <div>
+                    <span>03</span>
+                    <strong>SUBMIT</strong>
+                    <small>Send your request.</small>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="request-card reveal">
+
+            <div class="request-header">
+                <span>PROJECT REQUEST</span>
+                <span>SOHAM / 001</span>
+            </div>
+
+            <form id="project-form">
+
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label for="name">NAME</label>
+                        <input
+                            type="text"
+                            id="name"
+                            placeholder="Your name"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">EMAIL</label>
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="you@example.com"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="website-type">
+                            WEBSITE TYPE
+                        </label>
+
+                        <select id="website-type" required>
+
+                            <option value="">
+                                Select type
+                            </option>
+
+                            <option>Café</option>
+                            <option>Restaurant</option>
+                            <option>E-commerce</option>
+                            <option>Gym</option>
+                            <option>Coaching</option>
+                            <option>Corporate</option>
+                            <option>Real Estate</option>
+                            <option>Portfolio</option>
+                            <option>Custom</option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="package">
+                            PACKAGE
+                        </label>
+
+                        <select id="package" required>
+
+                            <option value="">
+                                Select package
+                            </option>
+
+                            <option value="SILVER">
+                                SILVER — ₹5K–₹10K
+                            </option>
+
+                            <option value="GOLD">
+                                GOLD — ₹15K–₹35K
+                            </option>
+
+                            <option value="PREMIUM">
+                                PREMIUM — ₹50K–₹2L
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="requirements">
+                        WHAT DO YOU WANT?
+                    </label>
+
+                    <textarea
+                        id="requirements"
+                        rows="6"
+                        placeholder="Tell us about your business, website idea, pages, features, style, etc."
+                        required
+                    ></textarea>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="submit-button"
+                >
+                    SEND PROJECT REQUEST
+                    <span>↗</span>
+                </button>
+
+                <div
+                    id="form-message"
+                    class="form-message"
+                ></div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer class="footer">
+
+    <div class="footer-top">
+
+        <div class="footer-brand">
+
+            <span>SOHAM</span>
+            <small>INDUSTRIES</small>
+
+        </div>
+
+        <p>
+            Engineering digital experiences.
+        </p>
+
+    </div>
+
+    <div class="footer-bottom">
+
+        <span>© 2026 SOHAM INDUSTRIES</span>
+
+        <span>
+            DESIGN / DEVELOPMENT / DIGITAL
+        </span>
+
+    </div>
+
+</footer>
+
+</div>
+
+
+<!-- =========================================================
+     LOGIN MODAL
+========================================================= -->
+
+<div class="modal" id="login-modal">
+
+    <div class="modal-backdrop"></div>
+
+    <div class="auth-modal">
+
+        <button class="modal-close" id="close-login">
+            ×
+        </button>
+
+        <div class="auth-header">
+
+            <span>SOHAM / ACCOUNT</span>
+
+            <h2>
+                WELCOME
+                <span>BACK.</span>
+            </h2>
+
+        </div>
+
+
+        <div class="auth-tabs">
+
+            <button
+                class="auth-tab active"
+                data-auth="login"
+            >
+                LOGIN
+            </button>
+
+            <button
+                class="auth-tab"
+                data-auth="signup"
+            >
+                CREATE ACCOUNT
+            </button>
+
+        </div>
+
+
+        <!-- LOGIN -->
+
+        <form id="login-form" class="auth-form">
+
+            <div class="form-group">
+
+                <label>EMAIL</label>
+
+                <input
+                    type="email"
+                    id="login-email"
+                    placeholder="you@example.com"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>PASSWORD</label>
+
+                <input
+                    type="password"
+                    id="login-password"
+                    placeholder="Password"
+                    required
+                >
+
+            </div>
+
+            <button type="submit" class="submit-button">
+                LOGIN
+                <span>→</span>
+            </button>
+
+            <div id="login-message" class="form-message"></div>
+
+        </form>
+
+
+        <!-- SIGNUP -->
+
+        <form
+            id="signup-form"
+            class="auth-form hidden"
+        >
+
+            <div class="form-group">
+
+                <label>NAME</label>
+
+                <input
+                    type="text"
+                    id="signup-name"
+                    placeholder="Your name"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>EMAIL</label>
+
+                <input
+                    type="email"
+                    id="signup-email"
+                    placeholder="you@example.com"
+                    required
+                >
+
+            </div>
+
+            <div class="form-group">
+
+                <label>PASSWORD</label>
+
+                <input
+                    type="password"
+                    id="signup-password"
+                    placeholder="Create a password"
+                    required
+                >
+
+            </div>
+
+            <button type="submit" class="submit-button">
+                CREATE ACCOUNT
+                <span>→</span>
+            </button>
+
+            <div id="signup-message" class="form-message"></div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     DASHBOARD MODAL
+========================================================= -->
+
+<div class="modal" id="dashboard-modal">
+
+    <div class="modal-backdrop"></div>
+
+    <div class="dashboard-modal">
+
+        <button
+            class="modal-close"
+            id="close-dashboard"
+        >
+            ×
+        </button>
+
+        <div class="dashboard-header">
+
+            <div>
+                <span>CLIENT PORTAL</span>
+
+                <h2>
+                    HELLO,
+                    <span id="dashboard-name">
+                        USER
+                    </span>
+                </h2>
+            </div>
+
+            <button
+                class="logout-button"
+                id="logout-button"
+            >
+                LOGOUT
+            </button>
+
+        </div>
+
+
+        <div class="dashboard-grid">
+
+            <div class="dashboard-card">
+
+                <span>YOUR ACCOUNT</span>
+
+                <strong id="dashboard-email">
+                    -
+                </strong>
+
+                <small>
+                    Client account
+                </small>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <span>REQUESTS</span>
+
+                <strong id="request-count">
+                    0
+                </strong>
+
+                <small>
+                    Submitted projects
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-requests">
+
+            <div class="dashboard-section-title">
+                YOUR PROJECT REQUESTS
+            </div>
+
+            <div id="request-list">
+                <div class="empty-state">
+                    No project requests yet.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     ADMIN MODAL
+========================================================= -->
+
+<div class="modal" id="admin-modal">
+
+    <div class="modal-backdrop"></div>
+
+    <div class="admin-modal">
+
+        <button
+            class="modal-close"
+            id="close-admin"
+        >
+            ×
+        </button>
+
+        <div class="dashboard-header">
+
+            <div>
+                <span>SOHAM / ADMIN</span>
+
+                <h2>
+                    PROJECT
+                    <span>REQUESTS.</span>
+                </h2>
+            </div>
+
+            <button
+                class="logout-button"
+                id="admin-logout"
+            >
+                CLOSE
+            </button>
+
+        </div>
+
+
+        <div id="admin-request-list">
+
+            <div class="empty-state">
+                No requests available.
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     TOAST
+========================================================= -->
+
+<div id="toast" class="toast">
+    <span id="toast-text"></span>
+</div>
+
+
+<script src="script.js"></script>
 
 </body>
 </html>
