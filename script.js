@@ -1,1264 +1,1101 @@
 /* =========================================================
    SOHAM INDUSTRIES
-   MASTER JAVASCRIPT
-   SUPABASE BACKEND VERSION
-========================================================= */
-
-"use strict";
-
+   MAIN JAVASCRIPT + SUPABASE BACKEND
+   ========================================================= */
 
 /* =========================================================
-   SUPABASE CONFIGURATION
-========================================================= */
+   1. SUPABASE CONFIGURATION
+   ========================================================= */
 
-const SUPABASE_URL =
-    "https://zqxnumdpefndysbkrrcy.supabase.co";
+const SUPABASE_URL = "https://zqxnumdpefndysbkrrcy.supabase.co";
 
 /*
-   Paste your Supabase PUBLISHABLE KEY below.
-
    IMPORTANT:
-   Use the publishable key only.
-   NEVER put a secret/service_role key here.
+   Replace ONLY the text below with your Supabase
+   PUBLISHABLE KEY.
+
+   Do NOT use the secret/service-role key.
 */
-
-const SUPABASE_PUBLISHABLE_KEY =
-    "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
+const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
 
 
-const supabaseClient =
-    window.supabase.createClient(
+// Make sure Supabase CDN is loaded
+if (!window.supabase) {
+    console.error(
+        "Supabase library not found. Make sure this is BEFORE script.js in index.html:"
+    );
+
+    console.error(
+        '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
+    );
+}
+
+const supabaseClient = window.supabase
+    ? window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_PUBLISHABLE_KEY
-    );
+    )
+    : null;
 
 
 /* =========================================================
-   GLOBAL AUTH STATE
-========================================================= */
+   2. GLOBAL VARIABLES
+   ========================================================= */
 
 let currentSession = null;
 let currentProfile = null;
+let selectedPackage = "";
+
+const body = document.body;
 
 
 /* =========================================================
-   INTRO
-========================================================= */
+   3. HELPER FUNCTIONS
+   ========================================================= */
 
-const INTRO_DURATION = 7000;
+function $(selector) {
+    return document.querySelector(selector);
+}
 
-const intro =
-    document.getElementById("cinematic-intro");
+function $$(selector) {
+    return document.querySelectorAll(selector);
+}
 
-const mainSite =
-    document.getElementById("main-site");
+function showToast(message, type = "normal") {
+    let toast = $("#toast");
 
-const introPercent =
-    document.getElementById("intro-percent");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toast";
 
-let introStart =
-    performance.now();
+        Object.assign(toast.style, {
+            position: "fixed",
+            bottom: "30px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            padding: "14px 22px",
+            borderRadius: "10px",
+            background: "#111",
+            color: "#fff",
+            zIndex: "99999",
+            fontSize: "14px",
+            boxShadow: "0 10px 30px rgba(0,0,0,.4)",
+            transition: "opacity .3s ease"
+        });
 
-
-function updateIntroProgress(now) {
-
-    const elapsed =
-        now - introStart;
-
-    const progress =
-        Math.min(
-            elapsed / INTRO_DURATION,
-            1
-        );
-
-    if (introPercent) {
-
-        introPercent.textContent =
-            Math.round(progress * 100) + "%";
-
+        document.body.appendChild(toast);
     }
 
-    if (progress < 1) {
+    toast.textContent = message;
+    toast.style.opacity = "1";
 
-        requestAnimationFrame(
-            updateIntroProgress
-        );
-
+    if (type === "error") {
+        toast.style.border = "1px solid #ff4d4d";
+    } else {
+        toast.style.border = "1px solid rgba(255,255,255,.2)";
     }
 
+    clearTimeout(window.toastTimer);
+
+    window.toastTimer = setTimeout(() => {
+        toast.style.opacity = "0";
+    }, 3500);
 }
 
 
-requestAnimationFrame(
-    updateIntroProgress
-);
+function closeAllModals() {
+    $$(".modal, .popup, .overlay").forEach(element => {
+        element.classList.remove("active");
+    });
 
-
-/*
-    Keep the intro exactly 7 seconds.
-*/
-
-setTimeout(() => {
-
-    if (!intro) return;
-
-    intro.style.pointerEvents =
-        "none";
-
-    setTimeout(() => {
-
-        intro.style.display =
-            "none";
-
-    }, 800);
-
-}, INTRO_DURATION);
-
-
-/* =========================================================
-   DOM HELPERS
-========================================================= */
-
-const $ =
-    selector =>
-        document.querySelector(selector);
-
-
-const $$ =
-    selector =>
-        document.querySelectorAll(selector);
-
-
-/* =========================================================
-   NAVBAR
-========================================================= */
-
-const navbar =
-    $("#navbar");
-
-
-window.addEventListener(
-    "scroll",
-    () => {
-
-        if (!navbar) return;
-
-        if (window.scrollY > 50) {
-
-            navbar.classList.add(
-                "scrolled"
-            );
-
-        } else {
-
-            navbar.classList.remove(
-                "scrolled"
-            );
-
-        }
-
-    },
-    {
-        passive: true
-    }
-);
-
-
-/* =========================================================
-   MOBILE MENU
-========================================================= */
-
-const mobileMenu =
-    $("#mobile-menu");
-
-const navLinks =
-    $(".nav-links");
-
-
-if (
-    mobileMenu &&
-    navLinks
-) {
-
-    mobileMenu.addEventListener(
-        "click",
-        () => {
-
-            navLinks.classList.toggle(
-                "open"
-            );
-
-        }
-    );
-
+    body.classList.remove("modal-open");
 }
 
 
-$$(".nav-link").forEach(
-    link => {
+function openModal(element) {
+    if (!element) return;
 
-        link.addEventListener(
-            "click",
-            () => {
+    element.classList.add("active");
+    body.classList.add("modal-open");
+}
 
-                navLinks?.classList.remove(
-                    "open"
-                );
 
+function closeModal(element) {
+    if (!element) return;
+
+    element.classList.remove("active");
+
+    if (!document.querySelector(".modal.active")) {
+        body.classList.remove("modal-open");
+    }
+}
+
+
+/* =========================================================
+   4. CINEMATIC INTRO
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const intro = $("#intro");
+    const progress = $("#progress");
+
+    if (intro) {
+
+        let progressValue = 0;
+
+        const progressTimer = setInterval(() => {
+
+            progressValue += Math.random() * 4;
+
+            if (progressValue >= 100) {
+                progressValue = 100;
+                clearInterval(progressTimer);
             }
-        );
 
+            if (progress) {
+                progress.style.width = `${progressValue}%`;
+            }
+
+        }, 100);
+
+        setTimeout(() => {
+
+            intro.classList.add("intro-hidden");
+
+            setTimeout(() => {
+                intro.style.display = "none";
+            }, 1000);
+
+        }, 7000);
     }
-);
+
+});
 
 
 /* =========================================================
-   ACTIVE NAVIGATION
-========================================================= */
+   5. NAVIGATION
+   ========================================================= */
 
-const sections =
-    $$("section[id]");
+const menuButton =
+    $("#menu-toggle") ||
+    $(".menu-toggle") ||
+    $(".hamburger");
 
+const nav =
+    $("#nav") ||
+    $(".nav-links") ||
+    $("nav ul");
+
+if (menuButton && nav) {
+
+    menuButton.addEventListener("click", () => {
+        nav.classList.toggle("active");
+        menuButton.classList.toggle("active");
+    });
+
+}
+
+
+$$("a[href^='#']").forEach(link => {
+
+    link.addEventListener("click", event => {
+
+        const targetID = link.getAttribute("href");
+
+        if (!targetID || targetID === "#") return;
+
+        const target = document.querySelector(targetID);
+
+        if (!target) return;
+
+        event.preventDefault();
+
+        target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+        if (nav) {
+            nav.classList.remove("active");
+        }
+
+    });
+
+});
+
+
+/* =========================================================
+   6. ACTIVE NAVIGATION
+   ========================================================= */
+
+const sections = $$("section[id]");
+const navLinks = $$("nav a[href^='#']");
+
+window.addEventListener("scroll", () => {
+
+    let currentSection = "";
+
+    sections.forEach(section => {
+
+        const top = section.offsetTop - 150;
+        const height = section.offsetHeight;
+
+        if (
+            window.scrollY >= top &&
+            window.scrollY < top + height
+        ) {
+            currentSection = section.id;
+        }
+
+    });
+
+    navLinks.forEach(link => {
+
+        link.classList.remove("active");
+
+        if (
+            currentSection &&
+            link.getAttribute("href") === `#${currentSection}`
+        ) {
+            link.classList.add("active");
+        }
+
+    });
+
+});
+
+
+/* =========================================================
+   7. SCROLL REVEAL
+   ========================================================= */
+
+const revealElements = $$(
+    ".reveal, .service-card, .package-card, .project-card, .about-card"
+);
 
 if ("IntersectionObserver" in window) {
 
-    const navObserver =
-        new IntersectionObserver(
-            entries => {
+    const revealObserver = new IntersectionObserver(
+        entries => {
 
-                entries.forEach(
-                    entry => {
+            entries.forEach(entry => {
 
-                        if (
-                            !entry.isIntersecting
-                        ) {
-                            return;
-                        }
+                if (entry.isIntersecting) {
 
-                        const id =
-                            entry.target.id;
+                    entry.target.classList.add("visible");
 
-                        $$(".nav-link")
-                            .forEach(
-                                link => {
-
-                                    link.classList.toggle(
-                                        "active",
-                                        link.getAttribute(
-                                            "href"
-                                        ) ===
-                                        `#${id}`
-                                    );
-
-                                }
-                            );
-
-                    }
-                );
-
-            },
-            {
-                threshold: .35
-            }
-        );
-
-
-    sections.forEach(
-        section => {
-
-            navObserver.observe(
-                section
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   SCROLL REVEAL
-========================================================= */
-
-if ("IntersectionObserver" in window) {
-
-    const revealObserver =
-        new IntersectionObserver(
-            entries => {
-
-                entries.forEach(
-                    entry => {
-
-                        if (
-                            entry.isIntersecting
-                        ) {
-
-                            entry.target.classList.add(
-                                "visible"
-                            );
-
-                            revealObserver.unobserve(
-                                entry.target
-                            );
-
-                        }
-
-                    }
-                );
-
-            },
-            {
-                threshold: .12,
-                rootMargin:
-                    "0px 0px -50px 0px"
-            }
-        );
-
-
-    $$(".reveal").forEach(
-        element => {
-
-            revealObserver.observe(
-                element
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   MODAL HELPERS
-========================================================= */
-
-function openModal(modal) {
-
-    if (!modal) return;
-
-    modal.classList.add(
-        "active"
-    );
-
-    document.body.classList.add(
-        "modal-open"
-    );
-
-}
-
-
-function closeModal(modal) {
-
-    if (!modal) return;
-
-    modal.classList.remove(
-        "active"
-    );
-
-    document.body.classList.remove(
-        "modal-open"
-    );
-
-}
-
-
-/* =========================================================
-   LOGIN MODAL
-========================================================= */
-
-const loginModal =
-    $("#login-modal");
-
-const openLogin =
-    $("#open-login");
-
-const closeLogin =
-    $("#close-login");
-
-
-openLogin?.addEventListener(
-    "click",
-    () => {
-
-        openModal(
-            loginModal
-        );
-
-    }
-);
-
-
-closeLogin?.addEventListener(
-    "click",
-    () => {
-
-        closeModal(
-            loginModal
-        );
-
-    }
-);
-
-
-/* =========================================================
-   AUTH TABS
-========================================================= */
-
-const authTabs =
-    $$(".auth-tab");
-
-const loginForm =
-    $("#login-form");
-
-const signupForm =
-    $("#signup-form");
-
-
-authTabs.forEach(
-    tab => {
-
-        tab.addEventListener(
-            "click",
-            () => {
-
-                authTabs.forEach(
-                    item =>
-                        item.classList.remove(
-                            "active"
-                        )
-                );
-
-                tab.classList.add(
-                    "active"
-                );
-
-                const mode =
-                    tab.dataset.auth;
-
-
-                if (
-                    mode === "login"
-                ) {
-
-                    loginForm?.classList.remove(
-                        "hidden"
-                    );
-
-                    signupForm?.classList.add(
-                        "hidden"
-                    );
-
-                } else {
-
-                    loginForm?.classList.add(
-                        "hidden"
-                    );
-
-                    signupForm?.classList.remove(
-                        "hidden"
-                    );
+                    revealObserver.unobserve(entry.target);
 
                 }
 
-            }
-        );
+            });
 
-    }
-);
+        },
+        {
+            threshold: 0.12
+        }
+    );
 
+    revealElements.forEach(element => {
+        revealObserver.observe(element);
+    });
 
-/* =========================================================
-   AUTH MESSAGE HELPER
-========================================================= */
+} else {
 
-function setMessage(
-    selector,
-    message
-) {
-
-    const element =
-        $(selector);
-
-    if (element) {
-
-        element.textContent =
-            message;
-
-    }
+    revealElements.forEach(element => {
+        element.classList.add("visible");
+    });
 
 }
 
 
 /* =========================================================
-   SIGNUP — SUPABASE AUTH
-========================================================= */
+   8. MODAL HELPERS
+   ========================================================= */
 
-signupForm?.addEventListener(
-    "submit",
-    async event => {
+const loginModal =
+    $("#loginModal") ||
+    $("#login-modal") ||
+    $(".login-modal");
 
-        event.preventDefault();
+const dashboardModal =
+    $("#dashboardModal") ||
+    $("#dashboard-modal") ||
+    $(".dashboard-modal");
 
-
-        const name =
-            $("#signup-name")
-                ?.value
-                .trim();
-
-
-        const email =
-            $("#signup-email")
-                ?.value
-                .trim()
-                .toLowerCase();
+const adminModal =
+    $("#adminModal") ||
+    $("#admin-modal") ||
+    $(".admin-modal");
 
 
-        const password =
-            $("#signup-password")
-                ?.value;
+function openLogin() {
+    openModal(loginModal);
+}
 
 
-        const message =
-            $("#signup-message");
+function openDashboard() {
+    openModal(dashboardModal);
+    loadCustomerRequests();
+}
 
 
-        if (
-            !name ||
-            !email ||
-            !password
-        ) {
-
-            setMessage(
-                "#signup-message",
-                "Please complete all fields."
-            );
-
-            return;
-
-        }
+function openAdminPanel() {
+    openModal(adminModal);
+    loadAdminRequests();
+}
 
 
-        if (
-            password.length < 6
-        ) {
+function logoutUser() {
 
-            setMessage(
-                "#signup-message",
-                "Password must contain at least 6 characters."
-            );
+    if (!supabaseClient) return;
 
-            return;
-
-        }
-
-
-        setMessage(
-            "#signup-message",
-            "Creating your account..."
-        );
-
-
-        try {
-
-            const {
-                data,
-                error
-            } =
-                await supabaseClient.auth.signUp({
-
-                    email,
-                    password,
-
-                    options: {
-
-                        data: {
-
-                            full_name:
-                                name
-
-                        }
-
-                    }
-
-                });
-
+    supabaseClient.auth.signOut()
+        .then(({ error }) => {
 
             if (error) {
-
-                console.error(
-                    "Signup error:",
-                    error
-                );
-
-                setMessage(
-                    "#signup-message",
-                    error.message
-                );
-
+                console.error(error);
+                showToast("Logout failed", "error");
                 return;
-
             }
 
+            currentSession = null;
+            currentProfile = null;
 
-            /*
-                Supabase may require email confirmation.
-            */
+            closeAllModals();
 
-            if (
-                data.user &&
-                !data.session
-            ) {
+            showToast("Logged out successfully");
 
-                setMessage(
-                    "#signup-message",
-                    "Account created. Please check your email to confirm your account."
-                );
+        });
 
-                showToast(
-                    "CHECK YOUR EMAIL"
-                );
-
-                return;
-
-            }
-
-
-            setMessage(
-                "#signup-message",
-                "Account created successfully."
-            );
-
-
-            showToast(
-                "ACCOUNT CREATED"
-            );
-
-
-            await refreshAuth();
-
-
-            setTimeout(
-                () => {
-
-                    closeModal(
-                        loginModal
-                    );
-
-                    openDashboard();
-
-                },
-                600
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Unexpected signup error:",
-                error
-            );
-
-            setMessage(
-                "#signup-message",
-                "Something went wrong. Please try again."
-            );
-
-        }
-
-    }
-);
+}
 
 
 /* =========================================================
-   LOGIN — SUPABASE AUTH
-========================================================= */
+   9. LOGIN BUTTONS
+   ========================================================= */
 
-loginForm?.addEventListener(
-    "submit",
-    async event => {
+$$(
+    "#loginBtn, .login-btn, [data-action='login']"
+).forEach(button => {
+
+    button.addEventListener("click", event => {
 
         event.preventDefault();
 
+        openLogin();
 
-        const email =
-            $("#login-email")
-                ?.value
-                .trim()
-                .toLowerCase();
+    });
 
-
-        const password =
-            $("#login-password")
-                ?.value;
+});
 
 
-        if (
-            !email ||
-            !password
-        ) {
+$$(
+    "#logoutBtn, .logout-btn, [data-action='logout']"
+).forEach(button => {
 
-            setMessage(
-                "#login-message",
-                "Please enter your email and password."
-            );
+    button.addEventListener("click", event => {
 
-            return;
+        event.preventDefault();
 
-        }
+        logoutUser();
 
+    });
 
-        setMessage(
-            "#login-message",
-            "Signing in..."
-        );
-
-
-        try {
-
-            const {
-                data,
-                error
-            } =
-                await supabaseClient.auth
-                    .signInWithPassword({
-
-                        email,
-                        password
-
-                    });
-
-
-            if (error) {
-
-                console.error(
-                    "Login error:",
-                    error
-                );
-
-                setMessage(
-                    "#login-message",
-                    "Incorrect email or password."
-                );
-
-                return;
-
-            }
-
-
-            currentSession =
-                data.session;
-
-
-            await loadProfile();
-
-
-            setMessage(
-                "#login-message",
-                "Login successful."
-            );
-
-
-            showToast(
-                "WELCOME BACK"
-            );
-
-
-            setTimeout(
-                () => {
-
-                    closeModal(
-                        loginModal
-                    );
-
-
-                    if (
-                        currentProfile?.role ===
-                        "admin"
-                    ) {
-
-                        openAdmin();
-
-                    } else {
-
-                        openDashboard();
-
-                    }
-
-                },
-                500
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Unexpected login error:",
-                error
-            );
-
-            setMessage(
-                "#login-message",
-                "Something went wrong. Please try again."
-            );
-
-        }
-
-    }
-);
+});
 
 
 /* =========================================================
-   LOAD PROFILE
-========================================================= */
+   10. CLOSE BUTTONS
+   ========================================================= */
+
+$$(
+    ".close-modal, .modal-close, [data-close]"
+).forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        const modal = button.closest(
+            ".modal, .popup, .overlay"
+        );
+
+        if (modal) {
+            closeModal(modal);
+        } else {
+            closeAllModals();
+        }
+
+    });
+
+});
+
+
+document.addEventListener("click", event => {
+
+    if (
+        event.target.classList.contains("modal") ||
+        event.target.classList.contains("overlay")
+    ) {
+        closeModal(event.target);
+    }
+
+});
+
+
+document.addEventListener("keydown", event => {
+
+    if (event.key === "Escape") {
+        closeAllModals();
+    }
+
+});
+
+
+/* =========================================================
+   11. LOGIN / SIGNUP TABS
+   ========================================================= */
+
+const loginForm =
+    $("#loginForm") ||
+    $("#login-form");
+
+const signupForm =
+    $("#signupForm") ||
+    $("#signup-form");
+
+
+const loginTab =
+    $("#loginTab") ||
+    $(".login-tab");
+
+const signupTab =
+    $("#signupTab") ||
+    $(".signup-tab");
+
+
+if (loginTab && signupTab) {
+
+    loginTab.addEventListener("click", () => {
+
+        loginTab.classList.add("active");
+        signupTab.classList.remove("active");
+
+        if (loginForm) {
+            loginForm.style.display = "block";
+        }
+
+        if (signupForm) {
+            signupForm.style.display = "none";
+        }
+
+    });
+
+
+    signupTab.addEventListener("click", () => {
+
+        signupTab.classList.add("active");
+        loginTab.classList.remove("active");
+
+        if (signupForm) {
+            signupForm.style.display = "block";
+        }
+
+        if (loginForm) {
+            loginForm.style.display = "none";
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   12. LOAD USER PROFILE
+   ========================================================= */
 
 async function loadProfile() {
 
-    if (
-        !currentSession?.user
-    ) {
-
-        currentProfile =
-            null;
-
+    if (!supabaseClient || !currentSession) {
+        currentProfile = null;
         return null;
-
     }
 
+    const userID = currentSession.user.id;
 
-    try {
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("profiles")
+        .select(
+            "id, full_name, email, role, created_at"
+        )
+        .eq("id", userID)
+        .maybeSingle();
 
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("profiles")
-                .select(
-                    "id, full_name, email, role, created_at"
-                )
-                .eq(
-                    "id",
-                    currentSession.user.id
-                )
-                .single();
-
-
-        if (error) {
-
-            console.error(
-                "Profile error:",
-                error
-            );
-
-            currentProfile =
-                null;
-
-            return null;
-
-        }
-
-
-        currentProfile =
-            data;
-
-
-        return data;
-
-
-    } catch (error) {
+    if (error) {
 
         console.error(
             "Profile loading error:",
             error
         );
 
-        currentProfile =
-            null;
+        currentProfile = null;
 
         return null;
-
     }
 
+    currentProfile = data;
+
+    return data;
 }
 
 
 /* =========================================================
-   REFRESH AUTH
-========================================================= */
+   13. SIGN UP
+   ========================================================= */
 
-async function refreshAuth() {
+if (signupForm) {
 
-    try {
+    signupForm.addEventListener("submit", async event => {
+
+        event.preventDefault();
+
+        if (!supabaseClient) {
+            showToast(
+                "Supabase is not connected.",
+                "error"
+            );
+            return;
+        }
+
+        const nameInput =
+            signupForm.querySelector(
+                "[name='name'], [name='full_name'], #signupName"
+            );
+
+        const emailInput =
+            signupForm.querySelector(
+                "[name='email'], #signupEmail"
+            );
+
+        const passwordInput =
+            signupForm.querySelector(
+                "[name='password'], #signupPassword"
+            );
+
+        const name =
+            nameInput?.value.trim() || "";
+
+        const email =
+            emailInput?.value.trim() || "";
+
+        const password =
+            passwordInput?.value || "";
+
+
+        if (!email || !password) {
+
+            showToast(
+                "Please enter your email and password.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (password.length < 6) {
+
+            showToast(
+                "Password must contain at least 6 characters.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        showToast("Creating your account...");
+
 
         const {
             data,
             error
-        } =
-            await supabaseClient.auth
-                .getSession();
+        } = await supabaseClient.auth.signUp({
+
+            email: email,
+
+            password: password,
+
+            options: {
+                data: {
+                    full_name: name
+                }
+            }
+
+        });
 
 
         if (error) {
 
             console.error(
-                "Session error:",
+                "Signup error:",
                 error
             );
 
-            return;
+            showToast(
+                error.message,
+                "error"
+            );
 
+            return;
         }
 
 
-        currentSession =
-            data.session;
+        if (data.user && !data.session) {
+
+            showToast(
+                "Account created! Check your email and confirm your account."
+            );
+
+            signupForm.reset();
+
+            return;
+        }
 
 
-        if (
-            currentSession
-        ) {
+        if (data.session) {
+
+            currentSession = data.session;
 
             await loadProfile();
 
-        } else {
+            signupForm.reset();
 
-            currentProfile =
-                null;
+            closeAllModals();
+
+            showToast(
+                "Account created successfully!"
+            );
+
+            openDashboard();
 
         }
 
+    });
 
-    } catch (error) {
+}
+
+
+/* =========================================================
+   14. LOGIN
+   ========================================================= */
+
+if (loginForm) {
+
+    loginForm.addEventListener("submit", async event => {
+
+        event.preventDefault();
+
+        if (!supabaseClient) {
+
+            showToast(
+                "Supabase is not connected.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const emailInput =
+            loginForm.querySelector(
+                "[name='email'], #loginEmail"
+            );
+
+        const passwordInput =
+            loginForm.querySelector(
+                "[name='password'], #loginPassword"
+            );
+
+
+        const email =
+            emailInput?.value.trim() || "";
+
+        const password =
+            passwordInput?.value || "";
+
+
+        if (!email || !password) {
+
+            showToast(
+                "Enter your email and password.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        showToast("Signing in...");
+
+
+        const {
+            data,
+            error
+        } = await supabaseClient.auth.signInWithPassword({
+
+            email: email,
+
+            password: password
+
+        });
+
+
+        if (error) {
+
+            console.error(
+                "Login error:",
+                error
+            );
+
+            showToast(
+                error.message,
+                "error"
+            );
+
+            return;
+        }
+
+
+        currentSession = data.session;
+
+
+        await loadProfile();
+
+
+        loginForm.reset();
+
+        closeAllModals();
+
+
+        if (
+            currentProfile &&
+            currentProfile.role === "admin"
+        ) {
+
+            showToast(
+                "Welcome back, Admin."
+            );
+
+            openAdminPanel();
+
+        } else {
+
+            showToast(
+                "Login successful."
+            );
+
+            openDashboard();
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   15. AUTH STATE
+   ========================================================= */
+
+async function refreshAuth() {
+
+    if (!supabaseClient) return;
+
+    const {
+        data,
+        error
+    } = await supabaseClient.auth.getSession();
+
+
+    if (error) {
 
         console.error(
-            "Auth refresh error:",
+            "Session error:",
             error
         );
+
+        return;
+    }
+
+
+    currentSession = data.session;
+
+
+    if (currentSession) {
+
+        await loadProfile();
+
+    } else {
+
+        currentProfile = null;
 
     }
 
 }
 
 
-/* =========================================================
-   AUTH STATE LISTENER
-========================================================= */
+if (supabaseClient) {
 
-supabaseClient.auth.onAuthStateChange(
-    async (
-        event,
-        session
-    ) => {
+    supabaseClient.auth.onAuthStateChange(
+        async (event, session) => {
 
-        currentSession =
-            session;
+            currentSession = session;
 
+            if (session) {
 
-        if (session) {
+                setTimeout(
+                    () => loadProfile(),
+                    0
+                );
 
-            /*
-                Delay profile query slightly so
-                authentication state is settled.
-            */
+            } else {
 
-            setTimeout(
-                async () => {
+                currentProfile = null;
 
-                    await loadProfile();
-
-                },
-                0
-            );
-
-        } else {
-
-            currentProfile =
-                null;
+            }
 
         }
-
-    }
-);
-
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
-const dashboardModal =
-    $("#dashboard-modal");
-
-const closeDashboard =
-    $("#close-dashboard");
-
-const logoutButton =
-    $("#logout-button");
-
-
-async function openDashboard() {
-
-    await refreshAuth();
-
-
-    if (
-        !currentSession?.user
-    ) {
-
-        openModal(
-            loginModal
-        );
-
-        return;
-
-    }
-
-
-    if (
-        currentProfile?.role ===
-        "admin"
-    ) {
-
-        openAdmin();
-
-        return;
-
-    }
-
-
-    const name =
-        currentProfile?.full_name ||
-        currentSession.user.user_metadata?.full_name ||
-        "CLIENT";
-
-
-    const email =
-        currentProfile?.email ||
-        currentSession.user.email ||
-        "";
-
-
-    if ($("#dashboard-name")) {
-
-        $("#dashboard-name").textContent =
-            name.toUpperCase();
-
-    }
-
-
-    if ($("#dashboard-email")) {
-
-        $("#dashboard-email").textContent =
-            email;
-
-    }
-
-
-    await loadUserRequests();
-
-
-    openModal(
-        dashboardModal
     );
 
 }
 
 
-closeDashboard?.addEventListener(
-    "click",
+/* =========================================================
+   16. INITIAL AUTH CHECK
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
     () => {
 
-        closeModal(
-            dashboardModal
-        );
+        refreshAuth();
 
     }
 );
 
 
 /* =========================================================
-   LOGOUT
-========================================================= */
+   17. PACKAGE SELECTION
+   ========================================================= */
 
-logoutButton?.addEventListener(
-    "click",
-    async () => {
+$$(
+    ".package-card button, .package-btn, [data-package]"
+).forEach(button => {
 
-        try {
-
-            const {
-                error
-            } =
-                await supabaseClient.auth
-                    .signOut();
-
-
-            if (error) {
-
-                console.error(
-                    "Logout error:",
-                    error
-                );
-
-                return;
-
-            }
-
-
-            currentSession =
-                null;
-
-            currentProfile =
-                null;
-
-
-            closeModal(
-                dashboardModal
-            );
-
-
-            closeModal(
-                adminModal
-            );
-
-
-            showToast(
-                "LOGGED OUT"
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Logout error:",
-                error
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   PROJECT FORM
-========================================================= */
-
-const projectForm =
-    $("#project-form");
-
-
-projectForm?.addEventListener(
-    "submit",
-    async event => {
+    button.addEventListener("click", event => {
 
         event.preventDefault();
 
+        const card =
+            button.closest(".package-card");
 
-        await refreshAuth();
+        let packageName =
+            button.dataset.package || "";
+
+        if (!packageName && card) {
+
+            const heading =
+                card.querySelector(
+                    "h2, h3, .package-name"
+                );
+
+            packageName =
+                heading?.textContent.trim() || "";
+
+        }
+
+        selectedPackage = packageName;
+
+        const requestSection =
+            $("#contact") ||
+            $("#projects") ||
+            $("#request");
+
+        if (requestSection) {
+
+            requestSection.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        }
+
+        const packageInput =
+            $(
+                "[name='package'], #package"
+            );
+
+        if (packageInput) {
+
+            packageInput.value =
+                selectedPackage;
+
+        }
+
+    });
+
+});
 
 
-        /*
-            Require Supabase login.
-        */
+/* =========================================================
+   18. PROJECT REQUEST FORM
+   ========================================================= */
 
-        if (
-            !currentSession?.user
-        ) {
+const requestForm =
+    $("#requestForm") ||
+    $("#projectRequestForm") ||
+    $("#contactForm");
+
+
+if (requestForm) {
+
+    requestForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            if (!supabaseClient) {
+
+                showToast(
+                    "Supabase is not connected.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (!currentSession) {
+
+                showToast(
+                    "Please create an account or login first.",
+                    "error"
+                );
+
+                openLogin();
+
+                return;
+            }
+
+
+            const getValue = names => {
+
+                for (const name of names) {
+
+                    const input =
+                        requestForm.querySelector(
+                            `[name="${name}"], #${name}`
+                        );
+
+                    if (input) {
+                        return input.value.trim();
+                    }
+
+                }
+
+                return "";
+
+            };
+
+
+            const name =
+                getValue([
+                    "name",
+                    "full_name",
+                    "clientName"
+                ]);
+
+
+            const email =
+                getValue([
+                    "email",
+                    "clientEmail"
+                ]);
+
+
+            const websiteType =
+                getValue([
+                    "website_type",
+                    "websiteType",
+                    "type"
+                ]);
+
+
+            const packageName =
+                getValue([
+                    "package",
+                    "packageName"
+                ]) ||
+                selectedPackage;
+
+
+            const requirements =
+                getValue([
+                    "requirements",
+                    "message",
+                    "details"
+                ]);
+
+
+            if (!name || !email || !websiteType) {
+
+                showToast(
+                    "Please fill all required fields.",
+                    "error"
+                );
+
+                return;
+            }
+
 
             showToast(
-                "LOGIN REQUIRED TO SUBMIT"
+                "Sending your project request..."
             );
 
-            openModal(
-                loginModal
-            );
-
-            return;
-
-        }
-
-
-        const name =
-            $("#name")
-                ?.value
-                .trim();
-
-
-        const email =
-            $("#email")
-                ?.value
-                .trim()
-                .toLowerCase();
-
-
-        const websiteType =
-            $("#website-type")
-                ?.value;
-
-
-        const selectedPackage =
-            $("#package")
-                ?.value;
-
-
-        const requirements =
-            $("#requirements")
-                ?.value
-                .trim();
-
-
-        if (
-            !name ||
-            !email ||
-            !websiteType ||
-            !selectedPackage
-        ) {
-
-            setMessage(
-                "#form-message",
-                "Please complete the required fields."
-            );
-
-            return;
-
-        }
-
-
-        setMessage(
-            "#form-message",
-            "Sending your project request..."
-        );
-
-
-        try {
 
             const {
+                data,
                 error
-            } =
-                await supabaseClient
-                    .from("website_requests")
-                    .insert({
+            } = await supabaseClient
+                .from("website_requests")
+                .insert({
 
-                        user_id:
-                            currentSession.user.id,
+                    user_id:
+                        currentSession.user.id,
 
-                        name,
+                    name: name,
 
-                        email,
+                    email: email,
 
-                        website_type:
-                            websiteType,
+                    website_type:
+                        websiteType,
 
-                        package:
-                            selectedPackage,
+                    package:
+                        packageName || null,
 
-                        requirements:
-                            requirements || null,
+                    requirements:
+                        requirements || null,
 
-                        status:
-                            "NEW"
+                    status: "NEW"
 
-                    });
+                })
+                .select()
+                .single();
 
 
             if (error) {
@@ -1268,892 +1105,541 @@ projectForm?.addEventListener(
                     error
                 );
 
-                setMessage(
-                    "#form-message",
-                    "Unable to submit your request. Please try again."
+                showToast(
+                    error.message,
+                    "error"
                 );
 
                 return;
-
             }
 
 
-            setMessage(
-                "#form-message",
-                "Project request submitted successfully."
+            console.log(
+                "Request created:",
+                data
             );
 
 
-            projectForm.reset();
+            requestForm.reset();
+
+            selectedPackage = "";
 
 
             showToast(
-                "PROJECT REQUEST SENT"
+                "Project request submitted successfully!"
             );
 
 
-        } catch (error) {
+            setTimeout(() => {
 
-            console.error(
-                "Unexpected request error:",
-                error
-            );
+                openDashboard();
 
-            setMessage(
-                "#form-message",
-                "Something went wrong. Please try again."
-            );
+            }, 800);
 
         }
-
-    }
-);
-
-
-/* =========================================================
-   PACKAGE BUTTONS
-========================================================= */
-
-$$(".package-button").forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const selectedPackage =
-                    button.dataset.package;
-
-
-                const packageSelect =
-                    $("#package");
-
-
-                if (
-                    packageSelect
-                ) {
-
-                    packageSelect.value =
-                        selectedPackage;
-
-                }
-
-
-                document
-                    .querySelector(
-                        "#contact"
-                    )
-                    ?.scrollIntoView({
-                        behavior:
-                            "smooth"
-                    });
-
-
-                showToast(
-                    `${selectedPackage} PACKAGE SELECTED`
-                );
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   PROJECT TYPE BUTTONS
-========================================================= */
-
-$$(".project-select").forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const type =
-                    button.dataset.type;
-
-
-                const websiteType =
-                    $("#website-type");
-
-
-                if (
-                    websiteType
-                ) {
-
-                    websiteType.value =
-                        type;
-
-                }
-
-
-                document
-                    .querySelector(
-                        "#contact"
-                    )
-                    ?.scrollIntoView({
-                        behavior:
-                            "smooth"
-                    });
-
-
-                showToast(
-                    `${type.toUpperCase()} SELECTED`
-                );
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   LOAD CLIENT REQUESTS
-========================================================= */
-
-async function loadUserRequests() {
-
-    if (
-        !currentSession?.user
-    ) {
-        return;
-    }
-
-
-    const list =
-        $("#request-list");
-
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("website_requests")
-                .select(
-                    "id, name, email, website_type, package, requirements, status, created_at"
-                )
-                .eq(
-                    "user_id",
-                    currentSession.user.id
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending:
-                            false
-                    }
-                );
-
-
-        if (error) {
-
-            console.error(
-                "Request loading error:",
-                error
-            );
-
-            if (list) {
-
-                list.innerHTML = `
-                    <div class="empty-state">
-                        Unable to load requests.
-                    </div>
-                `;
-
-            }
-
-            return;
-
-        }
-
-
-        const requests =
-            data || [];
-
-
-        if (
-            $("#request-count")
-        ) {
-
-            $("#request-count").textContent =
-                requests.length;
-
-        }
-
-
-        if (!list) return;
-
-
-        if (
-            !requests.length
-        ) {
-
-            list.innerHTML = `
-                <div class="empty-state">
-                    No project requests yet.
-                </div>
-            `;
-
-            return;
-
-        }
-
-
-        list.innerHTML =
-            requests.map(
-                request => `
-
-                <div class="request-item">
-
-                    <div class="request-item-header">
-
-                        <div>
-
-                            <h4>
-                                ${escapeHTML(
-                                    request.website_type
-                                )}
-                            </h4>
-
-                            <small>
-                                ${escapeHTML(
-                                    request.package
-                                )}
-                            </small>
-
-                        </div>
-
-                        <span class="status">
-                            ${escapeHTML(
-                                request.status
-                            )}
-                        </span>
-
-                    </div>
-
-                    <p>
-                        ${escapeHTML(
-                            request.requirements
-                        )}
-                    </p>
-
-                    <small>
-                        ${formatDate(
-                            request.created_at
-                        )}
-                    </small>
-
-                </div>
-
-            `
-            ).join("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Unexpected request loading error:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   ADMIN
-========================================================= */
-
-const adminModal =
-    $("#admin-modal");
-
-const closeAdmin =
-    $("#close-admin");
-
-const adminLogout =
-    $("#admin-logout");
-
-
-async function openAdmin() {
-
-    await refreshAuth();
-
-
-    if (
-        !currentSession?.user
-    ) {
-
-        openModal(
-            loginModal
-        );
-
-        return;
-
-    }
-
-
-    if (
-        currentProfile?.role !==
-        "admin"
-    ) {
-
-        showToast(
-            "ADMIN ACCESS REQUIRED"
-        );
-
-        return;
-
-    }
-
-
-    await loadAdminRequests();
-
-
-    openModal(
-        adminModal
     );
 
 }
 
 
-closeAdmin?.addEventListener(
-    "click",
-    () => {
+/* =========================================================
+   19. LOAD CUSTOMER REQUESTS
+   ========================================================= */
 
-        closeModal(
-            adminModal
+async function loadCustomerRequests() {
+
+    const container =
+        $(
+            "#customerRequests, #myRequests, .customer-requests"
         );
 
+
+    if (!container) return;
+
+
+    if (!currentSession) {
+
+        container.innerHTML =
+            "<p>Please login to view your requests.</p>";
+
+        return;
     }
-);
 
 
-/* =========================================================
-   ADMIN LOGOUT
-========================================================= */
-
-adminLogout?.addEventListener(
-    "click",
-    async () => {
-
-        try {
-
-            const {
-                error
-            } =
-                await supabaseClient.auth
-                    .signOut();
+    container.innerHTML =
+        "<p>Loading requests...</p>";
 
 
-            if (error) {
-
-                console.error(
-                    "Admin logout error:",
-                    error
-                );
-
-                return;
-
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("website_requests")
+        .select(
+            "id, name, email, website_type, package, requirements, status, created_at"
+        )
+        .eq(
+            "user_id",
+            currentSession.user.id
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
             }
+        );
 
 
-            currentSession =
-                null;
+    if (error) {
 
-            currentProfile =
-                null;
+        console.error(error);
 
+        container.innerHTML =
+            `<p>Unable to load requests.</p>`;
 
-            closeModal(
-                adminModal
-            );
-
-
-            showToast(
-                "LOGGED OUT"
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Admin logout error:",
-                error
-            );
-
-        }
-
+        return;
     }
-);
+
+
+    if (!data || data.length === 0) {
+
+        container.innerHTML =
+            "<p>No project requests yet.</p>";
+
+        return;
+    }
+
+
+    container.innerHTML =
+        data.map(request => {
+
+            const date =
+                new Date(
+                    request.created_at
+                ).toLocaleDateString();
+
+
+            return `
+                <div class="request-item">
+
+                    <div>
+                        <strong>
+                            ${escapeHTML(
+                                request.website_type || "Website"
+                            )}
+                        </strong>
+
+                        <span>
+                            ${escapeHTML(
+                                request.status || "NEW"
+                            )}
+                        </span>
+                    </div>
+
+                    <p>
+                        Package:
+                        ${escapeHTML(
+                            request.package || "Not selected"
+                        )}
+                    </p>
+
+                    <p>
+                        ${escapeHTML(
+                            request.requirements || ""
+                        )}
+                    </p>
+
+                    <small>
+                        ${date}
+                    </small>
+
+                </div>
+            `;
+
+        }).join("");
+
+}
 
 
 /* =========================================================
-   ADMIN REQUEST LIST
-========================================================= */
+   20. LOAD ADMIN REQUESTS
+   ========================================================= */
 
 async function loadAdminRequests() {
 
-    const list =
-        $("#admin-request-list");
+    const container =
+        $(
+            "#adminRequests, .admin-requests"
+        );
+
+
+    if (!container) return;
 
 
     if (
-        !list
-    ) return;
-
-
-    try {
-
-        const {
-            data,
-            error
-        } =
-            await supabaseClient
-                .from("website_requests")
-                .select(
-                    "id, name, email, website_type, package, requirements, status, created_at"
-                )
-                .order(
-                    "created_at",
-                    {
-                        ascending:
-                            false
-                    }
-                );
-
-
-        if (error) {
-
-            console.error(
-                "Admin request error:",
-                error
-            );
-
-
-            list.innerHTML = `
-                <div class="empty-state">
-                    Unable to load project requests.
-                </div>
-            `;
-
-
-            return;
-
-        }
-
-
-        const requests =
-            data || [];
-
-
-        if (
-            !requests.length
-        ) {
-
-            list.innerHTML = `
-                <div class="empty-state">
-                    No project requests available.
-                </div>
-            `;
-
-            return;
-
-        }
-
-
-        list.innerHTML =
-            requests.map(
-                request => `
-
-                <div class="admin-request">
-
-                    <div class="admin-request-header">
-
-                        <div>
-
-                            <h4>
-                                ${escapeHTML(
-                                    request.name
-                                )}
-                            </h4>
-
-                            <small>
-                                ${escapeHTML(
-                                    request.email
-                                )}
-                            </small>
-
-                        </div>
-
-                        <span class="status">
-                            ${escapeHTML(
-                                request.status
-                            )}
-                        </span>
-
-                    </div>
-
-                    <p>
-                        <strong>
-                            Website:
-                        </strong>
-
-                        ${escapeHTML(
-                            request.website_type
-                        )}
-                    </p>
-
-                    <p>
-                        <strong>
-                            Package:
-                        </strong>
-
-                        ${escapeHTML(
-                            request.package
-                        )}
-                    </p>
-
-                    <p>
-                        ${escapeHTML(
-                            request.requirements
-                        )}
-                    </p>
-
-                    <small>
-                        ${formatDate(
-                            request.created_at
-                        )}
-                    </small>
-
-                </div>
-
-            `
-            ).join("");
-
-
-    } catch (error) {
-
-        console.error(
-            "Unexpected admin request error:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHTML(value) {
-
-    return String(
-        value ?? ""
-    )
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-
-}
-
-
-/* =========================================================
-   DATE
-========================================================= */
-
-function formatDate(date) {
-
-    try {
-
-        return new Date(
-            date
-        ).toLocaleString();
-
-    } catch {
-
-        return "";
-
-    }
-
-}
-
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-let toastTimer;
-
-
-function showToast(message) {
-
-    const toast =
-        $("#toast");
-
-    const text =
-        $("#toast-text");
-
-
-    if (
-        !toast ||
-        !text
+        !currentProfile ||
+        currentProfile.role !== "admin"
     ) {
+
+        container.innerHTML =
+            "<p>Admin access required.</p>";
+
         return;
     }
 
 
-    text.textContent =
-        message;
+    container.innerHTML =
+        "<p>Loading all project requests...</p>";
 
 
-    toast.classList.add(
-        "show"
-    );
-
-
-    clearTimeout(
-        toastTimer
-    );
-
-
-    toastTimer =
-        setTimeout(
-            () => {
-
-                toast.classList.remove(
-                    "show"
-                );
-
-            },
-            2500
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from("website_requests")
+        .select(
+            "id, user_id, name, email, website_type, package, requirements, status, created_at"
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
         );
+
+
+    if (error) {
+
+        console.error(
+            "Admin requests error:",
+            error
+        );
+
+        container.innerHTML =
+            "<p>Unable to load admin requests.</p>";
+
+        return;
+    }
+
+
+    if (!data || data.length === 0) {
+
+        container.innerHTML =
+            "<p>No project requests found.</p>";
+
+        return;
+    }
+
+
+    container.innerHTML =
+        data.map(request => {
+
+            const date =
+                new Date(
+                    request.created_at
+                ).toLocaleString();
+
+
+            return `
+                <div class="admin-request-item">
+
+                    <h3>
+                        ${escapeHTML(
+                            request.website_type || "Website"
+                        )}
+                    </h3>
+
+                    <p>
+                        <strong>Customer:</strong>
+                        ${escapeHTML(
+                            request.name || ""
+                        )}
+                    </p>
+
+                    <p>
+                        <strong>Email:</strong>
+                        ${escapeHTML(
+                            request.email || ""
+                        )}
+                    </p>
+
+                    <p>
+                        <strong>Package:</strong>
+                        ${escapeHTML(
+                            request.package || "None"
+                        )}
+                    </p>
+
+                    <p>
+                        <strong>Requirements:</strong>
+                        ${escapeHTML(
+                            request.requirements || "None"
+                        )}
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        ${escapeHTML(
+                            request.status || "NEW"
+                        )}
+                    </p>
+
+                    <small>
+                        ${date}
+                    </small>
+
+                </div>
+            `;
+
+        }).join("");
 
 }
 
 
 /* =========================================================
-   CLOSE MODALS — BACKDROP
-========================================================= */
+   21. HTML SECURITY HELPER
+   ========================================================= */
 
-$$(".modal").forEach(
-    modal => {
+function escapeHTML(value) {
 
-        modal
-            .querySelector(
-                ".modal-backdrop"
-            )
-            ?.addEventListener(
-                "click",
-                () => {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
-                    closeModal(
-                        modal
-                    );
-
-                }
-            );
-
-    }
-);
+}
 
 
 /* =========================================================
-   ESCAPE KEY
-========================================================= */
+   22. DASHBOARD BUTTON
+   ========================================================= */
 
-document.addEventListener(
-    "keydown",
-    event => {
+$$(
+    "#dashboardBtn, .dashboard-btn, [data-action='dashboard']"
+).forEach(button => {
 
-        if (
-            event.key !==
-            "Escape"
-        ) {
+    button.addEventListener("click", event => {
+
+        event.preventDefault();
+
+        if (!currentSession) {
+
+            showToast(
+                "Please login first.",
+                "error"
+            );
+
+            openLogin();
+
+            return;
+        }
+
+        openDashboard();
+
+    });
+
+});
+
+
+/* =========================================================
+   23. ADMIN BUTTON
+   ========================================================= */
+
+$$(
+    "#adminBtn, .admin-btn, [data-action='admin']"
+).forEach(button => {
+
+    button.addEventListener("click", event => {
+
+        event.preventDefault();
+
+        if (!currentSession) {
+
+            showToast(
+                "Please login first.",
+                "error"
+            );
+
+            openLogin();
+
             return;
         }
 
 
-        $$(".modal.active")
-            .forEach(
-                modal => {
-
-                    closeModal(
-                        modal
-                    );
-
-                }
-            );
-
-    }
-);
-
-
-/* =========================================================
-   GLOBAL SMOOTH ANCHORS
-========================================================= */
-
-$$('a[href^="#"]').forEach(
-    link => {
-
-        link.addEventListener(
-            "click",
-            event => {
-
-                const targetID =
-                    link.getAttribute(
-                        "href"
-                    );
-
-
-                if (
-                    !targetID ||
-                    targetID === "#"
-                ) {
-                    return;
-                }
-
-
-                const target =
-                    document.querySelector(
-                        targetID
-                    );
-
-
-                if (!target) {
-                    return;
-                }
-
-
-                event.preventDefault();
-
-
-                target.scrollIntoView({
-                    behavior:
-                        "smooth"
-                });
-
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   IMAGE ERROR FALLBACK
-========================================================= */
-
-$$(".project-image").forEach(
-    image => {
-
-        const background =
-            getComputedStyle(
-                image
-            ).backgroundImage;
-
-
         if (
-            background &&
-            background.includes(
-                "url"
-            )
+            !currentProfile ||
+            currentProfile.role !== "admin"
         ) {
 
-            const testImage =
-                new Image();
+            showToast(
+                "Admin access required.",
+                "error"
+            );
+
+            return;
+        }
 
 
-            const match =
-                background.match(
-                    /url\(["']?(.*?)["']?\)/
+        openAdminPanel();
+
+    });
+
+});
+
+
+/* =========================================================
+   24. PROJECT CATEGORY BUTTONS
+   ========================================================= */
+
+$$(
+    ".project-card, .project-category"
+).forEach(card => {
+
+    card.addEventListener("click", () => {
+
+        const title =
+            card.querySelector(
+                "h2, h3, h4"
+            );
+
+        if (title) {
+
+            selectedPackage =
+                selectedPackage || "";
+
+            showToast(
+                `${title.textContent.trim()} selected`
+            );
+
+        }
+
+    });
+
+});
+
+
+/* =========================================================
+   25. IMAGE FALLBACK
+   ========================================================= */
+
+$$("img").forEach(image => {
+
+    image.addEventListener("error", () => {
+
+        image.style.opacity = "0";
+
+        image.parentElement?.classList.add(
+            "image-missing"
+        );
+
+    });
+
+});
+
+
+/* =========================================================
+   26. CURSOR EFFECT
+   ========================================================= */
+
+const cursor =
+    document.querySelector(".cursor");
+
+const cursorGlow =
+    document.querySelector(".cursor-glow");
+
+
+if (cursor || cursorGlow) {
+
+    document.addEventListener(
+        "mousemove",
+        event => {
+
+            const x = event.clientX;
+            const y = event.clientY;
+
+
+            if (cursor) {
+
+                cursor.style.left =
+                    `${x}px`;
+
+                cursor.style.top =
+                    `${y}px`;
+
+            }
+
+
+            if (cursorGlow) {
+
+                cursorGlow.style.left =
+                    `${x}px`;
+
+                cursorGlow.style.top =
+                    `${y}px`;
+
+            }
+
+        }
+    );
+
+
+    $$(
+        "a, button, input, textarea, select"
+    ).forEach(element => {
+
+        element.addEventListener(
+            "mouseenter",
+            () => {
+
+                cursor?.classList.add(
+                    "cursor-hover"
                 );
 
-
-            if (
-                match?.[1]
-            ) {
-
-                testImage.src =
-                    match[1];
+            }
+        );
 
 
-                testImage.onerror =
-                    () => {
+        element.addEventListener(
+            "mouseleave",
+            () => {
 
-                        image.style.backgroundImage =
-                            "linear-gradient(135deg,#222,#080808)";
-
-                    };
+                cursor?.classList.remove(
+                    "cursor-hover"
+                );
 
             }
+        );
 
-        }
+    });
+
+}
+
+
+/* =========================================================
+   27. PAGE LOAD
+   ========================================================= */
+
+window.addEventListener(
+    "load",
+    () => {
+
+        console.log(
+            "SOHAM INDUSTRIES website loaded."
+        );
+
+        console.log(
+            "Supabase:",
+            supabaseClient
+                ? "Connected"
+                : "NOT CONNECTED"
+        );
 
     }
 );
 
 
 /* =========================================================
-   INITIALIZATION
-========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
-
-        console.log(
-            "SOHAM INDUSTRIES SYSTEM ONLINE"
-        );
-
-
-        /*
-            Restore existing Supabase session.
-        */
-
-        await refreshAuth();
-
-
-        if (
-            currentSession
-        ) {
-
-            console.log(
-                "SUPABASE SESSION RESTORED"
-            );
-
-        } else {
-
-            console.log(
-                "NO ACTIVE USER SESSION"
-            );
-
-        }
-
-    }
-);
+   END
+   ========================================================= */
