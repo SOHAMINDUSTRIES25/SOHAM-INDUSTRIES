@@ -1,866 +1,1388 @@
 /* =========================================================
-   SOHAM INDUSTRIES
-   MAIN JAVASCRIPT + SUPABASE BACKEND
-   ========================================================= */
+   SOHAM INDUSTRIES — SCRIPT.JS
+   Supabase + Login + Signup + Dashboard + Requests
+========================================================= */
 
-/* =========================================================
-   1. SUPABASE CONFIGURATION
-   ========================================================= */
+const SUPABASE_URL =
+    "https://zqxnumdpefndysbkrrcy.supabase.co";
 
-const SUPABASE_URL = "https://zqxnumdpefndysbkrrcy.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY =
+    "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
 
-/*
-   IMPORTANT:
-   Replace ONLY the text below with your Supabase
-   PUBLISHABLE KEY.
-
-   Do NOT use the secret/service-role key.
-*/
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_NY-WNgp08StgIBuTj8xoCA_x2tIL-ex";
-
-
-// Make sure Supabase CDN is loaded
-if (!window.supabase) {
-    console.error(
-        "Supabase library not found. Make sure this is BEFORE script.js in index.html:"
-    );
-
-    console.error(
-        '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
-    );
-}
-
-const supabaseClient = window.supabase
-    ? window.supabase.createClient(
+const supabaseClient =
+    window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_PUBLISHABLE_KEY
-    )
-    : null;
+    );
 
 
 /* =========================================================
-   2. GLOBAL VARIABLES
-   ========================================================= */
+   GLOBAL
+========================================================= */
 
 let currentSession = null;
 let currentProfile = null;
 let selectedPackage = "";
 
-const body = document.body;
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const loginButton =
+    document.getElementById("open-login");
+
+const loginModal =
+    document.getElementById("login-modal");
+
+const closeLogin =
+    document.getElementById("close-login");
+
+const loginForm =
+    document.getElementById("login-form");
+
+const signupForm =
+    document.getElementById("signup-form");
+
+const dashboardModal =
+    document.getElementById("dashboard-modal");
+
+const adminModal =
+    document.getElementById("admin-modal");
+
+const closeDashboard =
+    document.getElementById("close-dashboard");
+
+const closeAdmin =
+    document.getElementById("close-admin");
+
+const logoutButton =
+    document.getElementById("logout-button");
+
+const adminLogout =
+    document.getElementById("admin-logout");
+
+const projectForm =
+    document.getElementById("project-form");
+
+const requestList =
+    document.getElementById("request-list");
+
+const adminRequestList =
+    document.getElementById("admin-request-list");
 
 
 /* =========================================================
-   3. HELPER FUNCTIONS
-   ========================================================= */
+   TOAST
+========================================================= */
 
-function $(selector) {
-    return document.querySelector(selector);
-}
+function showToast(message) {
 
-function $$(selector) {
-    return document.querySelectorAll(selector);
-}
+    const toast =
+        document.getElementById("toast");
 
-function showToast(message, type = "normal") {
-    let toast = $("#toast");
+    const toastText =
+        document.getElementById("toast-text");
 
-    if (!toast) {
-        toast = document.createElement("div");
-        toast.id = "toast";
+    if (!toast || !toastText) return;
 
-        Object.assign(toast.style, {
-            position: "fixed",
-            bottom: "30px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            padding: "14px 22px",
-            borderRadius: "10px",
-            background: "#111",
-            color: "#fff",
-            zIndex: "99999",
-            fontSize: "14px",
-            boxShadow: "0 10px 30px rgba(0,0,0,.4)",
-            transition: "opacity .3s ease"
-        });
+    toastText.textContent = message;
 
-        document.body.appendChild(toast);
-    }
+    toast.classList.add("show");
 
-    toast.textContent = message;
-    toast.style.opacity = "1";
-
-    if (type === "error") {
-        toast.style.border = "1px solid #ff4d4d";
-    } else {
-        toast.style.border = "1px solid rgba(255,255,255,.2)";
-    }
-
-    clearTimeout(window.toastTimer);
-
-    window.toastTimer = setTimeout(() => {
-        toast.style.opacity = "0";
+    setTimeout(() => {
+        toast.classList.remove("show");
     }, 3500);
 }
 
 
-function closeAllModals() {
-    $$(".modal, .popup, .overlay").forEach(element => {
-        element.classList.remove("active");
-    });
+/* =========================================================
+   MODALS
+========================================================= */
 
-    body.classList.remove("modal-open");
+function openModal(modal) {
+
+    if (!modal) return;
+
+    modal.classList.add("active");
+
+    document.body.classList.add("modal-open");
 }
 
 
-function openModal(element) {
-    if (!element) return;
+function closeModal(modal) {
 
-    element.classList.add("active");
-    body.classList.add("modal-open");
-}
+    if (!modal) return;
 
+    modal.classList.remove("active");
 
-function closeModal(element) {
-    if (!element) return;
-
-    element.classList.remove("active");
-
-    if (!document.querySelector(".modal.active")) {
-        body.classList.remove("modal-open");
+    if (
+        !document.querySelector(".modal.active")
+    ) {
+        document.body.classList.remove(
+            "modal-open"
+        );
     }
 }
 
 
 /* =========================================================
-   4. CINEMATIC INTRO
-   ========================================================= */
+   LOGIN OPEN
+========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+if (loginButton) {
 
-    const intro = $("#intro");
-    const progress = $("#progress");
+    loginButton.addEventListener(
+        "click",
+        function () {
 
-    if (intro) {
+            openModal(loginModal);
 
-        let progressValue = 0;
-
-        const progressTimer = setInterval(() => {
-
-            progressValue += Math.random() * 4;
-
-            if (progressValue >= 100) {
-                progressValue = 100;
-                clearInterval(progressTimer);
-            }
-
-            if (progress) {
-                progress.style.width = `${progressValue}%`;
-            }
-
-        }, 100);
-
-        setTimeout(() => {
-
-            intro.classList.add("intro-hidden");
-
-            setTimeout(() => {
-                intro.style.display = "none";
-            }, 1000);
-
-        }, 7000);
-    }
-
-});
-
-
-/* =========================================================
-   5. NAVIGATION
-   ========================================================= */
-
-const menuButton =
-    $("#menu-toggle") ||
-    $(".menu-toggle") ||
-    $(".hamburger");
-
-const nav =
-    $("#nav") ||
-    $(".nav-links") ||
-    $("nav ul");
-
-if (menuButton && nav) {
-
-    menuButton.addEventListener("click", () => {
-        nav.classList.toggle("active");
-        menuButton.classList.toggle("active");
-    });
-
-}
-
-
-$$("a[href^='#']").forEach(link => {
-
-    link.addEventListener("click", event => {
-
-        const targetID = link.getAttribute("href");
-
-        if (!targetID || targetID === "#") return;
-
-        const target = document.querySelector(targetID);
-
-        if (!target) return;
-
-        event.preventDefault();
-
-        target.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-
-        if (nav) {
-            nav.classList.remove("active");
-        }
-
-    });
-
-});
-
-
-/* =========================================================
-   6. ACTIVE NAVIGATION
-   ========================================================= */
-
-const sections = $$("section[id]");
-const navLinks = $$("nav a[href^='#']");
-
-window.addEventListener("scroll", () => {
-
-    let currentSection = "";
-
-    sections.forEach(section => {
-
-        const top = section.offsetTop - 150;
-        const height = section.offsetHeight;
-
-        if (
-            window.scrollY >= top &&
-            window.scrollY < top + height
-        ) {
-            currentSection = section.id;
-        }
-
-    });
-
-    navLinks.forEach(link => {
-
-        link.classList.remove("active");
-
-        if (
-            currentSection &&
-            link.getAttribute("href") === `#${currentSection}`
-        ) {
-            link.classList.add("active");
-        }
-
-    });
-
-});
-
-
-/* =========================================================
-   7. SCROLL REVEAL
-   ========================================================= */
-
-const revealElements = $$(
-    ".reveal, .service-card, .package-card, .project-card, .about-card"
-);
-
-if ("IntersectionObserver" in window) {
-
-    const revealObserver = new IntersectionObserver(
-        entries => {
-
-            entries.forEach(entry => {
-
-                if (entry.isIntersecting) {
-
-                    entry.target.classList.add("visible");
-
-                    revealObserver.unobserve(entry.target);
-
-                }
-
-            });
-
-        },
-        {
-            threshold: 0.12
         }
     );
 
-    revealElements.forEach(element => {
-        revealObserver.observe(element);
-    });
+}
 
-} else {
 
-    revealElements.forEach(element => {
-        element.classList.add("visible");
-    });
+/* =========================================================
+   CLOSE LOGIN
+========================================================= */
+
+if (closeLogin) {
+
+    closeLogin.addEventListener(
+        "click",
+        function () {
+
+            closeModal(loginModal);
+
+        }
+    );
 
 }
 
 
 /* =========================================================
-   8. MODAL HELPERS
-   ========================================================= */
+   CLOSE DASHBOARD
+========================================================= */
 
-const loginModal =
-    $("#loginModal") ||
-    $("#login-modal") ||
-    $(".login-modal");
+if (closeDashboard) {
 
-const dashboardModal =
-    $("#dashboardModal") ||
-    $("#dashboard-modal") ||
-    $(".dashboard-modal");
+    closeDashboard.addEventListener(
+        "click",
+        function () {
 
-const adminModal =
-    $("#adminModal") ||
-    $("#admin-modal") ||
-    $(".admin-modal");
+            closeModal(dashboardModal);
 
+        }
+    );
 
-function openLogin() {
-    openModal(loginModal);
 }
 
 
-function openDashboard() {
-    openModal(dashboardModal);
-    loadCustomerRequests();
+/* =========================================================
+   CLOSE ADMIN
+========================================================= */
+
+if (closeAdmin) {
+
+    closeAdmin.addEventListener(
+        "click",
+        function () {
+
+            closeModal(adminModal);
+
+        }
+    );
+
 }
 
 
-function openAdminPanel() {
-    openModal(adminModal);
-    loadAdminRequests();
-}
+/* =========================================================
+   BACKDROP CLOSE
+========================================================= */
+
+document.querySelectorAll(
+    ".modal-backdrop"
+).forEach(backdrop => {
+
+    backdrop.addEventListener(
+        "click",
+        function () {
+
+            const modal =
+                backdrop.parentElement;
+
+            closeModal(modal);
+
+        }
+    );
+
+});
 
 
-function logoutUser() {
+/* =========================================================
+   ESCAPE KEY
+========================================================= */
 
-    if (!supabaseClient) return;
+document.addEventListener(
+    "keydown",
+    function (event) {
 
-    supabaseClient.auth.signOut()
-        .then(({ error }) => {
+        if (event.key === "Escape") {
 
-            if (error) {
-                console.error(error);
-                showToast("Logout failed", "error");
-                return;
+            closeModal(loginModal);
+            closeModal(dashboardModal);
+            closeModal(adminModal);
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   AUTH TABS
+========================================================= */
+
+const authTabs =
+    document.querySelectorAll(
+        ".auth-tab"
+    );
+
+
+authTabs.forEach(tab => {
+
+    tab.addEventListener(
+        "click",
+        function () {
+
+            const type =
+                tab.dataset.auth;
+
+            authTabs.forEach(t => {
+                t.classList.remove(
+                    "active"
+                );
+            });
+
+            tab.classList.add("active");
+
+
+            if (type === "login") {
+
+                loginForm.classList.remove(
+                    "hidden"
+                );
+
+                signupForm.classList.add(
+                    "hidden"
+                );
+
             }
 
-            currentSession = null;
-            currentProfile = null;
 
-            closeAllModals();
+            if (type === "signup") {
 
-            showToast("Logged out successfully");
+                signupForm.classList.remove(
+                    "hidden"
+                );
 
-        });
+                loginForm.classList.add(
+                    "hidden"
+                );
 
-}
+            }
 
-
-/* =========================================================
-   9. LOGIN BUTTONS
-   ========================================================= */
-
-$$(
-    "#loginBtn, .login-btn, [data-action='login']"
-).forEach(button => {
-
-    button.addEventListener("click", event => {
-
-        event.preventDefault();
-
-        openLogin();
-
-    });
-
-});
-
-
-$$(
-    "#logoutBtn, .logout-btn, [data-action='logout']"
-).forEach(button => {
-
-    button.addEventListener("click", event => {
-
-        event.preventDefault();
-
-        logoutUser();
-
-    });
+        }
+    );
 
 });
 
 
 /* =========================================================
-   10. CLOSE BUTTONS
-   ========================================================= */
-
-$$(
-    ".close-modal, .modal-close, [data-close]"
-).forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        const modal = button.closest(
-            ".modal, .popup, .overlay"
-        );
-
-        if (modal) {
-            closeModal(modal);
-        } else {
-            closeAllModals();
-        }
-
-    });
-
-});
-
-
-document.addEventListener("click", event => {
-
-    if (
-        event.target.classList.contains("modal") ||
-        event.target.classList.contains("overlay")
-    ) {
-        closeModal(event.target);
-    }
-
-});
-
-
-document.addEventListener("keydown", event => {
-
-    if (event.key === "Escape") {
-        closeAllModals();
-    }
-
-});
-
-
-/* =========================================================
-   11. LOGIN / SIGNUP TABS
-   ========================================================= */
-
-const loginForm =
-    $("#loginForm") ||
-    $("#login-form");
-
-const signupForm =
-    $("#signupForm") ||
-    $("#signup-form");
-
-
-const loginTab =
-    $("#loginTab") ||
-    $(".login-tab");
-
-const signupTab =
-    $("#signupTab") ||
-    $(".signup-tab");
-
-
-if (loginTab && signupTab) {
-
-    loginTab.addEventListener("click", () => {
-
-        loginTab.classList.add("active");
-        signupTab.classList.remove("active");
-
-        if (loginForm) {
-            loginForm.style.display = "block";
-        }
-
-        if (signupForm) {
-            signupForm.style.display = "none";
-        }
-
-    });
-
-
-    signupTab.addEventListener("click", () => {
-
-        signupTab.classList.add("active");
-        loginTab.classList.remove("active");
-
-        if (signupForm) {
-            signupForm.style.display = "block";
-        }
-
-        if (loginForm) {
-            loginForm.style.display = "none";
-        }
-
-    });
-
-}
-
-
-/* =========================================================
-   12. LOAD USER PROFILE
-   ========================================================= */
-
-async function loadProfile() {
-
-    if (!supabaseClient || !currentSession) {
-        currentProfile = null;
-        return null;
-    }
-
-    const userID = currentSession.user.id;
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("profiles")
-        .select(
-            "id, full_name, email, role, created_at"
-        )
-        .eq("id", userID)
-        .maybeSingle();
-
-    if (error) {
-
-        console.error(
-            "Profile loading error:",
-            error
-        );
-
-        currentProfile = null;
-
-        return null;
-    }
-
-    currentProfile = data;
-
-    return data;
-}
-
-
-/* =========================================================
-   13. SIGN UP
-   ========================================================= */
+   SIGN UP
+========================================================= */
 
 if (signupForm) {
 
-    signupForm.addEventListener("submit", async event => {
+    signupForm.addEventListener(
+        "submit",
+        async function (event) {
 
-        event.preventDefault();
-
-        if (!supabaseClient) {
-            showToast(
-                "Supabase is not connected.",
-                "error"
-            );
-            return;
-        }
-
-        const nameInput =
-            signupForm.querySelector(
-                "[name='name'], [name='full_name'], #signupName"
-            );
-
-        const emailInput =
-            signupForm.querySelector(
-                "[name='email'], #signupEmail"
-            );
-
-        const passwordInput =
-            signupForm.querySelector(
-                "[name='password'], #signupPassword"
-            );
-
-        const name =
-            nameInput?.value.trim() || "";
-
-        const email =
-            emailInput?.value.trim() || "";
-
-        const password =
-            passwordInput?.value || "";
+            event.preventDefault();
 
 
-        if (!email || !password) {
+            const name =
+                document.getElementById(
+                    "signup-name"
+                ).value.trim();
 
-            showToast(
-                "Please enter your email and password.",
-                "error"
-            );
+            const email =
+                document.getElementById(
+                    "signup-email"
+                ).value.trim();
 
-            return;
-        }
-
-
-        if (password.length < 6) {
-
-            showToast(
-                "Password must contain at least 6 characters.",
-                "error"
-            );
-
-            return;
-        }
+            const password =
+                document.getElementById(
+                    "signup-password"
+                ).value;
 
 
-        showToast("Creating your account...");
+            if (!name || !email || !password) {
 
+                showToast(
+                    "Please fill all fields."
+                );
 
-        const {
-            data,
-            error
-        } = await supabaseClient.auth.signUp({
+                return;
 
-            email: email,
-
-            password: password,
-
-            options: {
-                data: {
-                    full_name: name
-                }
             }
 
-        });
+
+            if (password.length < 6) {
+
+                showToast(
+                    "Password must be at least 6 characters."
+                );
+
+                return;
+
+            }
 
 
-        if (error) {
+            showToast(
+                "Creating your account..."
+            );
 
-            console.error(
-                "Signup error:",
+
+            const {
+                data,
                 error
-            );
+            } =
+                await supabaseClient.auth.signUp({
 
-            showToast(
-                error.message,
-                "error"
-            );
+                    email: email,
 
-            return;
-        }
+                    password: password,
+
+                    options: {
+
+                        data: {
+                            full_name: name
+                        }
+
+                    }
+
+                });
 
 
-        if (data.user && !data.session) {
+            if (error) {
 
-            showToast(
-                "Account created! Check your email and confirm your account."
-            );
+                console.error(
+                    "SIGNUP ERROR:",
+                    error
+                );
+
+                showToast(
+                    error.message
+                );
+
+                return;
+
+            }
+
 
             signupForm.reset();
 
-            return;
+
+            if (
+                data.user &&
+                !data.session
+            ) {
+
+                showToast(
+                    "Account created! Check your email and confirm it."
+                );
+
+                return;
+
+            }
+
+
+            if (data.session) {
+
+                currentSession =
+                    data.session;
+
+                await loadProfile();
+
+                closeModal(loginModal);
+
+                showDashboard();
+
+                showToast(
+                    "Account created successfully!"
+                );
+
+            }
+
         }
-
-
-        if (data.session) {
-
-            currentSession = data.session;
-
-            await loadProfile();
-
-            signupForm.reset();
-
-            closeAllModals();
-
-            showToast(
-                "Account created successfully!"
-            );
-
-            openDashboard();
-
-        }
-
-    });
+    );
 
 }
 
 
 /* =========================================================
-   14. LOGIN
-   ========================================================= */
+   LOGIN
+========================================================= */
 
 if (loginForm) {
 
-    loginForm.addEventListener("submit", async event => {
+    loginForm.addEventListener(
+        "submit",
+        async function (event) {
 
-        event.preventDefault();
+            event.preventDefault();
 
-        if (!supabaseClient) {
+
+            const email =
+                document.getElementById(
+                    "login-email"
+                ).value.trim();
+
+            const password =
+                document.getElementById(
+                    "login-password"
+                ).value;
+
+
+            if (!email || !password) {
+
+                showToast(
+                    "Enter email and password."
+                );
+
+                return;
+
+            }
+
 
             showToast(
-                "Supabase is not connected.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        const emailInput =
-            loginForm.querySelector(
-                "[name='email'], #loginEmail"
-            );
-
-        const passwordInput =
-            loginForm.querySelector(
-                "[name='password'], #loginPassword"
+                "Signing in..."
             );
 
 
-        const email =
-            emailInput?.value.trim() || "";
-
-        const password =
-            passwordInput?.value || "";
-
-
-        if (!email || !password) {
-
-            showToast(
-                "Enter your email and password.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        showToast("Signing in...");
-
-
-        const {
-            data,
-            error
-        } = await supabaseClient.auth.signInWithPassword({
-
-            email: email,
-
-            password: password
-
-        });
-
-
-        if (error) {
-
-            console.error(
-                "Login error:",
+            const {
+                data,
                 error
-            );
+            } =
+                await supabaseClient.auth
+                    .signInWithPassword({
 
-            showToast(
-                error.message,
-                "error"
-            );
+                        email: email,
 
-            return;
+                        password: password
+
+                    });
+
+
+            if (error) {
+
+                console.error(
+                    "LOGIN ERROR:",
+                    error
+                );
+
+                showToast(
+                    error.message
+                );
+
+                return;
+
+            }
+
+
+            currentSession =
+                data.session;
+
+
+            await loadProfile();
+
+
+            loginForm.reset();
+
+            closeModal(loginModal);
+
+
+            if (
+                currentProfile &&
+                currentProfile.role ===
+                    "admin"
+            ) {
+
+                showAdmin();
+
+                showToast(
+                    "Welcome, Admin."
+                );
+
+            } else {
+
+                showDashboard();
+
+                showToast(
+                    "Login successful."
+                );
+
+            }
+
         }
-
-
-        currentSession = data.session;
-
-
-        await loadProfile();
-
-
-        loginForm.reset();
-
-        closeAllModals();
-
-
-        if (
-            currentProfile &&
-            currentProfile.role === "admin"
-        ) {
-
-            showToast(
-                "Welcome back, Admin."
-            );
-
-            openAdminPanel();
-
-        } else {
-
-            showToast(
-                "Login successful."
-            );
-
-            openDashboard();
-
-        }
-
-    });
+    );
 
 }
 
 
 /* =========================================================
-   15. AUTH STATE
-   ========================================================= */
+   LOAD PROFILE
+========================================================= */
 
-async function refreshAuth() {
+async function loadProfile() {
 
-    if (!supabaseClient) return;
+    if (!currentSession) {
+
+        currentProfile = null;
+
+        return;
+
+    }
+
 
     const {
         data,
         error
-    } = await supabaseClient.auth.getSession();
+    } =
+        await supabaseClient
+            .from("profiles")
+            .select(
+                "id, full_name, email, role, created_at"
+            )
+            .eq(
+                "id",
+                currentSession.user.id
+            )
+            .maybeSingle();
 
 
     if (error) {
 
         console.error(
-            "Session error:",
+            "PROFILE ERROR:",
             error
         );
 
         return;
+
     }
 
 
-    currentSession = data.session;
+    currentProfile = data;
+
+}
+
+
+/* =========================================================
+   SHOW DASHBOARD
+========================================================= */
+
+async function showDashboard() {
+
+    if (!currentSession) {
+
+        openModal(loginModal);
+
+        return;
+
+    }
+
+
+    const name =
+        document.getElementById(
+            "dashboard-name"
+        );
+
+    const email =
+        document.getElementById(
+            "dashboard-email"
+        );
+
+
+    if (name) {
+
+        name.textContent =
+            currentProfile?.full_name ||
+            currentSession.user.email;
+
+    }
+
+
+    if (email) {
+
+        email.textContent =
+            currentSession.user.email;
+
+    }
+
+
+    openModal(dashboardModal);
+
+    await loadCustomerRequests();
+
+}
+
+
+/* =========================================================
+   SHOW ADMIN
+========================================================= */
+
+async function showAdmin() {
+
+    if (
+        !currentProfile ||
+        currentProfile.role !== "admin"
+    ) {
+
+        showToast(
+            "Admin access required."
+        );
+
+        return;
+
+    }
+
+
+    openModal(adminModal);
+
+    await loadAdminRequests();
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logout() {
+
+    const {
+        error
+    } =
+        await supabaseClient.auth
+            .signOut();
+
+
+    if (error) {
+
+        console.error(error);
+
+        showToast(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    currentSession = null;
+
+    currentProfile = null;
+
+
+    closeModal(loginModal);
+
+    closeModal(dashboardModal);
+
+    closeModal(adminModal);
+
+
+    showToast(
+        "Logged out successfully."
+    );
+
+}
+
+
+if (logoutButton) {
+
+    logoutButton.addEventListener(
+        "click",
+        logout
+    );
+
+}
+
+
+if (adminLogout) {
+
+    adminLogout.addEventListener(
+        "click",
+        function () {
+
+            closeModal(adminModal);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CUSTOMER REQUESTS
+========================================================= */
+
+async function loadCustomerRequests() {
+
+    if (!requestList) return;
+
+
+    requestList.innerHTML =
+        `<div class="empty-state">
+            Loading requests...
+        </div>`;
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("website_requests")
+            .select(
+                "id, name, email, website_type, package, requirements, status, created_at"
+            )
+            .eq(
+                "user_id",
+                currentSession.user.id
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "REQUEST ERROR:",
+            error
+        );
+
+        requestList.innerHTML =
+            `<div class="empty-state">
+                Unable to load requests.
+            </div>`;
+
+        return;
+
+    }
+
+
+    const count =
+        document.getElementById(
+            "request-count"
+        );
+
+
+    if (count) {
+
+        count.textContent =
+            data.length;
+
+    }
+
+
+    if (!data.length) {
+
+        requestList.innerHTML =
+            `<div class="empty-state">
+                No project requests yet.
+            </div>`;
+
+        return;
+
+    }
+
+
+    requestList.innerHTML =
+        data.map(request => {
+
+            return `
+                <div class="request-item">
+
+                    <strong>
+                        ${escapeHTML(
+                            request.website_type
+                        )}
+                    </strong>
+
+                    <span>
+                        ${escapeHTML(
+                            request.status
+                        )}
+                    </span>
+
+                    <p>
+                        Package:
+                        ${escapeHTML(
+                            request.package ||
+                            "Not selected"
+                        )}
+                    </p>
+
+                    <p>
+                        ${escapeHTML(
+                            request.requirements ||
+                            ""
+                        )}
+                    </p>
+
+                </div>
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   ADMIN REQUESTS
+========================================================= */
+
+async function loadAdminRequests() {
+
+    if (!adminRequestList) return;
+
+
+    adminRequestList.innerHTML =
+        `<div class="empty-state">
+            Loading requests...
+        </div>`;
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("website_requests")
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "ADMIN REQUEST ERROR:",
+            error
+        );
+
+        adminRequestList.innerHTML =
+            `<div class="empty-state">
+                Unable to load requests.
+            </div>`;
+
+        return;
+
+    }
+
+
+    if (!data.length) {
+
+        adminRequestList.innerHTML =
+            `<div class="empty-state">
+                No requests available.
+            </div>`;
+
+        return;
+
+    }
+
+
+    adminRequestList.innerHTML =
+        data.map(request => {
+
+            return `
+                <div class="admin-request-item">
+
+                    <h3>
+                        ${escapeHTML(
+                            request.website_type
+                        )}
+                    </h3>
+
+                    <p>
+                        <strong>
+                            Customer:
+                        </strong>
+                        ${escapeHTML(
+                            request.name
+                        )}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Email:
+                        </strong>
+                        ${escapeHTML(
+                            request.email
+                        )}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Package:
+                        </strong>
+                        ${escapeHTML(
+                            request.package ||
+                            "None"
+                        )}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Requirements:
+                        </strong>
+                        ${escapeHTML(
+                            request.requirements ||
+                            "None"
+                        )}
+                    </p>
+
+                    <p>
+                        <strong>
+                            Status:
+                        </strong>
+                        ${escapeHTML(
+                            request.status ||
+                            "NEW"
+                        )}
+                    </p>
+
+                </div>
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   PROJECT REQUEST FORM
+========================================================= */
+
+if (projectForm) {
+
+    projectForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+
+            if (!currentSession) {
+
+                showToast(
+                    "Please login before submitting a request."
+                );
+
+                openModal(loginModal);
+
+                return;
+
+            }
+
+
+            const name =
+                document.getElementById(
+                    "name"
+                ).value.trim();
+
+            const email =
+                document.getElementById(
+                    "email"
+                ).value.trim();
+
+            const websiteType =
+                document.getElementById(
+                    "website-type"
+                ).value;
+
+            const packageName =
+                document.getElementById(
+                    "package"
+                ).value;
+
+            const requirements =
+                document.getElementById(
+                    "requirements"
+                ).value.trim();
+
+
+            showToast(
+                "Submitting project request..."
+            );
+
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient
+                    .from(
+                        "website_requests"
+                    )
+                    .insert({
+
+                        user_id:
+                            currentSession.user.id,
+
+                        name: name,
+
+                        email: email,
+
+                        website_type:
+                            websiteType,
+
+                        package:
+                            packageName,
+
+                        requirements:
+                            requirements,
+
+                        status: "NEW"
+
+                    })
+                    .select()
+                    .single();
+
+
+            if (error) {
+
+                console.error(
+                    "SUBMIT ERROR:",
+                    error
+                );
+
+                showToast(
+                    error.message
+                );
+
+                return;
+
+            }
+
+
+            projectForm.reset();
+
+
+            showToast(
+                "Project request submitted!"
+            );
+
+
+            if (
+                dashboardModal &&
+                dashboardModal.classList.contains(
+                    "active"
+                )
+            ) {
+
+                await loadCustomerRequests();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   PACKAGE BUTTONS
+========================================================= */
+
+document.querySelectorAll(
+    ".package-button"
+).forEach(button => {
+
+    button.addEventListener(
+        "click",
+        function () {
+
+            selectedPackage =
+                button.dataset.package;
+
+            const packageInput =
+                document.getElementById(
+                    "package"
+                );
+
+
+            if (packageInput) {
+
+                packageInput.value =
+                    selectedPackage;
+
+            }
+
+
+            document
+                .getElementById("contact")
+                ?.scrollIntoView({
+                    behavior: "smooth"
+                });
+
+        }
+    );
+
+});
+
+
+/* =========================================================
+   PROJECT SELECT BUTTONS
+========================================================= */
+
+document.querySelectorAll(
+    ".project-select"
+).forEach(button => {
+
+    button.addEventListener(
+        "click",
+        function (event) {
+
+            event.stopPropagation();
+
+
+            const type =
+                button.dataset.type;
+
+            const websiteInput =
+                document.getElementById(
+                    "website-type"
+                );
+
+
+            if (websiteInput) {
+
+                websiteInput.value =
+                    type;
+
+            }
+
+
+            document
+                .getElementById("contact")
+                ?.scrollIntoView({
+                    behavior: "smooth"
+                });
+
+        }
+    );
+
+});
+
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+const mobileMenu =
+    document.getElementById(
+        "mobile-menu"
+    );
+
+const navLinks =
+    document.querySelector(
+        ".nav-links"
+    );
+
+
+if (mobileMenu && navLinks) {
+
+    mobileMenu.addEventListener(
+        "click",
+        function () {
+
+            navLinks.classList.toggle(
+                "active"
+            );
+
+            mobileMenu.classList.toggle(
+                "active"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+document.querySelectorAll(
+    ".nav-link"
+).forEach(link => {
+
+    link.addEventListener(
+        "click",
+        function () {
+
+            navLinks?.classList.remove(
+                "active"
+            );
+
+            mobileMenu?.classList.remove(
+                "active"
+            );
+
+        }
+    );
+
+});
+
+
+/* =========================================================
+   SCROLL REVEAL
+========================================================= */
+
+const revealElements =
+    document.querySelectorAll(
+        ".reveal"
+    );
+
+
+if (
+    "IntersectionObserver"
+    in window
+) {
+
+    const observer =
+        new IntersectionObserver(
+            entries => {
+
+                entries.forEach(entry => {
+
+                    if (
+                        entry.isIntersecting
+                    ) {
+
+                        entry.target.classList.add(
+                            "visible"
+                        );
+
+                    }
+
+                });
+
+            },
+            {
+                threshold: 0.12
+            }
+        );
+
+
+    revealElements.forEach(element => {
+
+        observer.observe(element);
+
+    });
+
+}
+
+
+/* =========================================================
+   IMAGE FALLBACK
+========================================================= */
+
+document.querySelectorAll(
+    "img"
+).forEach(image => {
+
+    image.addEventListener(
+        "error",
+        function () {
+
+            this.style.display =
+                "none";
+
+        }
+    );
+
+});
+
+
+/* =========================================================
+   SUPABASE SESSION
+========================================================= */
+
+async function initializeAuth() {
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth
+            .getSession();
+
+
+    if (error) {
+
+        console.error(
+            "SESSION ERROR:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    currentSession =
+        data.session;
 
 
     if (currentSession) {
 
         await loadProfile();
 
-    } else {
-
-        currentProfile = null;
-
     }
 
 }
 
 
-if (supabaseClient) {
+supabaseClient.auth
+    .onAuthStateChange(
+        async (
+            event,
+            session
+        ) => {
 
-    supabaseClient.auth.onAuthStateChange(
-        async (event, session) => {
-
-            currentSession = session;
+            currentSession =
+                session;
 
             if (session) {
 
-                setTimeout(
-                    () => loadProfile(),
-                    0
-                );
+                await loadProfile();
 
             } else {
 
@@ -871,775 +1393,143 @@ if (supabaseClient) {
         }
     );
 
-}
-
 
 /* =========================================================
-   16. INITIAL AUTH CHECK
-   ========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        refreshAuth();
-
-    }
-);
-
-
-/* =========================================================
-   17. PACKAGE SELECTION
-   ========================================================= */
-
-$$(
-    ".package-card button, .package-btn, [data-package]"
-).forEach(button => {
-
-    button.addEventListener("click", event => {
-
-        event.preventDefault();
-
-        const card =
-            button.closest(".package-card");
-
-        let packageName =
-            button.dataset.package || "";
-
-        if (!packageName && card) {
-
-            const heading =
-                card.querySelector(
-                    "h2, h3, .package-name"
-                );
-
-            packageName =
-                heading?.textContent.trim() || "";
-
-        }
-
-        selectedPackage = packageName;
-
-        const requestSection =
-            $("#contact") ||
-            $("#projects") ||
-            $("#request");
-
-        if (requestSection) {
-
-            requestSection.scrollIntoView({
-                behavior: "smooth"
-            });
-
-        }
-
-        const packageInput =
-            $(
-                "[name='package'], #package"
-            );
-
-        if (packageInput) {
-
-            packageInput.value =
-                selectedPackage;
-
-        }
-
-    });
-
-});
-
-
-/* =========================================================
-   18. PROJECT REQUEST FORM
-   ========================================================= */
-
-const requestForm =
-    $("#requestForm") ||
-    $("#projectRequestForm") ||
-    $("#contactForm");
-
-
-if (requestForm) {
-
-    requestForm.addEventListener(
-        "submit",
-        async event => {
-
-            event.preventDefault();
-
-
-            if (!supabaseClient) {
-
-                showToast(
-                    "Supabase is not connected.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            if (!currentSession) {
-
-                showToast(
-                    "Please create an account or login first.",
-                    "error"
-                );
-
-                openLogin();
-
-                return;
-            }
-
-
-            const getValue = names => {
-
-                for (const name of names) {
-
-                    const input =
-                        requestForm.querySelector(
-                            `[name="${name}"], #${name}`
-                        );
-
-                    if (input) {
-                        return input.value.trim();
-                    }
-
-                }
-
-                return "";
-
-            };
-
-
-            const name =
-                getValue([
-                    "name",
-                    "full_name",
-                    "clientName"
-                ]);
-
-
-            const email =
-                getValue([
-                    "email",
-                    "clientEmail"
-                ]);
-
-
-            const websiteType =
-                getValue([
-                    "website_type",
-                    "websiteType",
-                    "type"
-                ]);
-
-
-            const packageName =
-                getValue([
-                    "package",
-                    "packageName"
-                ]) ||
-                selectedPackage;
-
-
-            const requirements =
-                getValue([
-                    "requirements",
-                    "message",
-                    "details"
-                ]);
-
-
-            if (!name || !email || !websiteType) {
-
-                showToast(
-                    "Please fill all required fields.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            showToast(
-                "Sending your project request..."
-            );
-
-
-            const {
-                data,
-                error
-            } = await supabaseClient
-                .from("website_requests")
-                .insert({
-
-                    user_id:
-                        currentSession.user.id,
-
-                    name: name,
-
-                    email: email,
-
-                    website_type:
-                        websiteType,
-
-                    package:
-                        packageName || null,
-
-                    requirements:
-                        requirements || null,
-
-                    status: "NEW"
-
-                })
-                .select()
-                .single();
-
-
-            if (error) {
-
-                console.error(
-                    "Request error:",
-                    error
-                );
-
-                showToast(
-                    error.message,
-                    "error"
-                );
-
-                return;
-            }
-
-
-            console.log(
-                "Request created:",
-                data
-            );
-
-
-            requestForm.reset();
-
-            selectedPackage = "";
-
-
-            showToast(
-                "Project request submitted successfully!"
-            );
-
-
-            setTimeout(() => {
-
-                openDashboard();
-
-            }, 800);
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   19. LOAD CUSTOMER REQUESTS
-   ========================================================= */
-
-async function loadCustomerRequests() {
-
-    const container =
-        $(
-            "#customerRequests, #myRequests, .customer-requests"
-        );
-
-
-    if (!container) return;
-
-
-    if (!currentSession) {
-
-        container.innerHTML =
-            "<p>Please login to view your requests.</p>";
-
-        return;
-    }
-
-
-    container.innerHTML =
-        "<p>Loading requests...</p>";
-
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("website_requests")
-        .select(
-            "id, name, email, website_type, package, requirements, status, created_at"
-        )
-        .eq(
-            "user_id",
-            currentSession.user.id
-        )
-        .order(
-            "created_at",
-            {
-                ascending: false
-            }
-        );
-
-
-    if (error) {
-
-        console.error(error);
-
-        container.innerHTML =
-            `<p>Unable to load requests.</p>`;
-
-        return;
-    }
-
-
-    if (!data || data.length === 0) {
-
-        container.innerHTML =
-            "<p>No project requests yet.</p>";
-
-        return;
-    }
-
-
-    container.innerHTML =
-        data.map(request => {
-
-            const date =
-                new Date(
-                    request.created_at
-                ).toLocaleDateString();
-
-
-            return `
-                <div class="request-item">
-
-                    <div>
-                        <strong>
-                            ${escapeHTML(
-                                request.website_type || "Website"
-                            )}
-                        </strong>
-
-                        <span>
-                            ${escapeHTML(
-                                request.status || "NEW"
-                            )}
-                        </span>
-                    </div>
-
-                    <p>
-                        Package:
-                        ${escapeHTML(
-                            request.package || "Not selected"
-                        )}
-                    </p>
-
-                    <p>
-                        ${escapeHTML(
-                            request.requirements || ""
-                        )}
-                    </p>
-
-                    <small>
-                        ${date}
-                    </small>
-
-                </div>
-            `;
-
-        }).join("");
-
-}
-
-
-/* =========================================================
-   20. LOAD ADMIN REQUESTS
-   ========================================================= */
-
-async function loadAdminRequests() {
-
-    const container =
-        $(
-            "#adminRequests, .admin-requests"
-        );
-
-
-    if (!container) return;
-
-
-    if (
-        !currentProfile ||
-        currentProfile.role !== "admin"
-    ) {
-
-        container.innerHTML =
-            "<p>Admin access required.</p>";
-
-        return;
-    }
-
-
-    container.innerHTML =
-        "<p>Loading all project requests...</p>";
-
-
-    const {
-        data,
-        error
-    } = await supabaseClient
-        .from("website_requests")
-        .select(
-            "id, user_id, name, email, website_type, package, requirements, status, created_at"
-        )
-        .order(
-            "created_at",
-            {
-                ascending: false
-            }
-        );
-
-
-    if (error) {
-
-        console.error(
-            "Admin requests error:",
-            error
-        );
-
-        container.innerHTML =
-            "<p>Unable to load admin requests.</p>";
-
-        return;
-    }
-
-
-    if (!data || data.length === 0) {
-
-        container.innerHTML =
-            "<p>No project requests found.</p>";
-
-        return;
-    }
-
-
-    container.innerHTML =
-        data.map(request => {
-
-            const date =
-                new Date(
-                    request.created_at
-                ).toLocaleString();
-
-
-            return `
-                <div class="admin-request-item">
-
-                    <h3>
-                        ${escapeHTML(
-                            request.website_type || "Website"
-                        )}
-                    </h3>
-
-                    <p>
-                        <strong>Customer:</strong>
-                        ${escapeHTML(
-                            request.name || ""
-                        )}
-                    </p>
-
-                    <p>
-                        <strong>Email:</strong>
-                        ${escapeHTML(
-                            request.email || ""
-                        )}
-                    </p>
-
-                    <p>
-                        <strong>Package:</strong>
-                        ${escapeHTML(
-                            request.package || "None"
-                        )}
-                    </p>
-
-                    <p>
-                        <strong>Requirements:</strong>
-                        ${escapeHTML(
-                            request.requirements || "None"
-                        )}
-                    </p>
-
-                    <p>
-                        <strong>Status:</strong>
-                        ${escapeHTML(
-                            request.status || "NEW"
-                        )}
-                    </p>
-
-                    <small>
-                        ${date}
-                    </small>
-
-                </div>
-            `;
-
-        }).join("");
-
-}
-
-
-/* =========================================================
-   21. HTML SECURITY HELPER
-   ========================================================= */
+   SAFE HTML
+========================================================= */
 
 function escapeHTML(value) {
 
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    return String(value ?? "")
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 
 }
 
 
 /* =========================================================
-   22. DASHBOARD BUTTON
-   ========================================================= */
-
-$$(
-    "#dashboardBtn, .dashboard-btn, [data-action='dashboard']"
-).forEach(button => {
-
-    button.addEventListener("click", event => {
-
-        event.preventDefault();
-
-        if (!currentSession) {
-
-            showToast(
-                "Please login first.",
-                "error"
-            );
-
-            openLogin();
-
-            return;
-        }
-
-        openDashboard();
-
-    });
-
-});
-
-
-/* =========================================================
-   23. ADMIN BUTTON
-   ========================================================= */
-
-$$(
-    "#adminBtn, .admin-btn, [data-action='admin']"
-).forEach(button => {
-
-    button.addEventListener("click", event => {
-
-        event.preventDefault();
-
-        if (!currentSession) {
-
-            showToast(
-                "Please login first.",
-                "error"
-            );
-
-            openLogin();
-
-            return;
-        }
-
-
-        if (
-            !currentProfile ||
-            currentProfile.role !== "admin"
-        ) {
-
-            showToast(
-                "Admin access required.",
-                "error"
-            );
-
-            return;
-        }
-
-
-        openAdminPanel();
-
-    });
-
-});
-
-
-/* =========================================================
-   24. PROJECT CATEGORY BUTTONS
-   ========================================================= */
-
-$$(
-    ".project-card, .project-category"
-).forEach(card => {
-
-    card.addEventListener("click", () => {
-
-        const title =
-            card.querySelector(
-                "h2, h3, h4"
-            );
-
-        if (title) {
-
-            selectedPackage =
-                selectedPackage || "";
-
-            showToast(
-                `${title.textContent.trim()} selected`
-            );
-
-        }
-
-    });
-
-});
-
-
-/* =========================================================
-   25. IMAGE FALLBACK
-   ========================================================= */
-
-$$("img").forEach(image => {
-
-    image.addEventListener("error", () => {
-
-        image.style.opacity = "0";
-
-        image.parentElement?.classList.add(
-            "image-missing"
-        );
-
-    });
-
-});
-
-
-/* =========================================================
-   26. CURSOR EFFECT
-   ========================================================= */
-
-const cursor =
-    document.querySelector(".cursor");
-
-const cursorGlow =
-    document.querySelector(".cursor-glow");
-
-
-if (cursor || cursorGlow) {
-
-    document.addEventListener(
-        "mousemove",
-        event => {
-
-            const x = event.clientX;
-            const y = event.clientY;
-
-
-            if (cursor) {
-
-                cursor.style.left =
-                    `${x}px`;
-
-                cursor.style.top =
-                    `${y}px`;
-
-            }
-
-
-            if (cursorGlow) {
-
-                cursorGlow.style.left =
-                    `${x}px`;
-
-                cursorGlow.style.top =
-                    `${y}px`;
-
-            }
-
-        }
+   INTRO
+========================================================= */
+
+const intro =
+    document.getElementById(
+        "cinematic-intro"
+    );
+
+const mainSite =
+    document.getElementById(
+        "main-site"
+    );
+
+const progressBar =
+    document.getElementById(
+        "intro-progress-bar"
+    );
+
+const percent =
+    document.getElementById(
+        "intro-percent"
     );
 
 
-    $$(
-        "a, button, input, textarea, select"
-    ).forEach(element => {
+if (intro) {
 
-        element.addEventListener(
-            "mouseenter",
-            () => {
+    let progress = 0;
 
-                cursor?.classList.add(
-                    "cursor-hover"
-                );
 
-            }
+    const timer =
+        setInterval(
+            function () {
+
+                progress += 1.5;
+
+
+                if (
+                    progress >= 100
+                ) {
+
+                    progress = 100;
+
+                    clearInterval(
+                        timer
+                    );
+
+                }
+
+
+                if (progressBar) {
+
+                    progressBar.style.width =
+                        `${progress}%`;
+
+                }
+
+
+                if (percent) {
+
+                    percent.textContent =
+                        `${Math.floor(progress)}%`;
+
+                }
+
+            },
+            100
         );
 
 
-        element.addEventListener(
-            "mouseleave",
-            () => {
+    setTimeout(
+        function () {
 
-                cursor?.classList.remove(
-                    "cursor-hover"
+            intro.classList.add(
+                "hidden"
+            );
+
+            if (mainSite) {
+
+                mainSite.classList.add(
+                    "visible"
                 );
 
             }
-        );
 
-    });
+        },
+        7000
+    );
 
 }
 
 
 /* =========================================================
-   27. PAGE LOAD
-   ========================================================= */
+   START
+========================================================= */
 
-window.addEventListener(
-    "load",
-    () => {
+initializeAuth();
 
-        console.log(
-            "SOHAM INDUSTRIES website loaded."
-        );
-
-        console.log(
-            "Supabase:",
-            supabaseClient
-                ? "Connected"
-                : "NOT CONNECTED"
-        );
-
-    }
+console.log(
+    "SOHAM INDUSTRIES website loaded."
 );
 
-
-/* =========================================================
-   END
-   ========================================================= */
+console.log(
+    "Supabase:",
+    supabaseClient
+        ? "Connected"
+        : "Not connected"
+);
